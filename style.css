@@ -519,7 +519,6 @@ body.dark-mode .footer-bottom {
     border-radius: 16px;
     padding: 1.5rem;
     box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
-    transition: all 0.3s ease;
     position: relative;
     overflow: hidden;
     display: flex;
@@ -537,15 +536,6 @@ body.dark-mode .footer-bottom {
     background: linear-gradient(90deg, var(--primary-color), var(--secondary-color));
     transform: scaleX(0);
     transition: transform 0.3s ease;
-}
-
-.feature-card:hover {
-    transform: translateY(-8px);
-    box-shadow: 0 15px 30px rgba(0, 0, 0, 0.12);
-}
-
-.feature-card:hover::before {
-    transform: scaleX(1);
 }
 
 .feature-icon {
@@ -1804,14 +1794,14 @@ body.dark-mode .category-btn:hover {
 
 .order-actions {
     display: flex;
-    gap: 1.5rem;
-    flex-wrap: wrap;
+    justify-content: center;
+    margin-top: 2rem;
 }
 
 .order-btn {
-    padding: 1rem 2rem;
+    padding: 1.2rem 3rem;
     border-radius: 50px;
-    font-size: 1.1rem;
+    font-size: 1.2rem;
     font-weight: 600;
     cursor: pointer;
     transition: all 0.3s ease;
@@ -1820,6 +1810,8 @@ body.dark-mode .category-btn:hover {
     gap: 0.8rem;
     border: 2px solid transparent;
     text-decoration: none;
+    min-width: 250px;
+    justify-content: center;
 }
 
 .order-btn.primary {
