@@ -172,10 +172,34 @@ class RestaurantSystem {
 
     // Menu Page
     loadMenuPage() {
+        // Debug: Check if data is loaded
+        console.log('Restaurant data loaded:', {
+            categories: restaurantData.categories.length,
+            products: restaurantData.products.length,
+            sampleProduct: restaurantData.products[0]
+        });
+        
+        // Force show some test products if data is available
+        if (restaurantData.products.length > 0) {
+            const container = document.getElementById('menuProducts');
+            const testProducts = restaurantData.products.slice(0, 12); // Show first 12 products
+            console.log('Force loading test products:', testProducts.length);
+            
+            container.innerHTML = testProducts.map(product => 
+                this.createProductCard(product)
+            ).join('');
+            
+            container.style.display = 'grid';
+            container.style.visibility = 'visible';
+            
+            console.log('Test products HTML length:', container.innerHTML.length);
+        } else {
+            console.error('No products available in restaurantData');
+        }
+        
         this.loadCategories();
         this.loadProducts();
         this.setupMenuFilters();
-        this.setupMenuUpload();
     }
 
     loadCategories() {
@@ -228,6 +252,11 @@ class RestaurantSystem {
                 this.currentCategory === 'all' ? null : parseInt(this.currentCategory)
             );
 
+            // Debug: Log the products data
+            console.log('Current category:', this.currentCategory);
+            console.log('Total products found:', products.length);
+            console.log('Products:', products);
+
             // Apply filters
             if (this.vegetarianOnly) {
                 products = products.filter(p => p.isVegetarian);
@@ -247,11 +276,22 @@ class RestaurantSystem {
             const endIndex = startIndex + this.itemsPerPage;
             const paginatedProducts = products.slice(startIndex, endIndex);
 
+            // Debug: Log pagination info
+            console.log('Paginated products:', paginatedProducts.length);
+
             // Render products
             const container = document.getElementById('menuProducts');
-            container.innerHTML = paginatedProducts.map(product => 
-                this.createProductCard(product)
-            ).join('');
+            
+            // Debug: Check if we have products
+            if (paginatedProducts.length === 0) {
+                console.log('No products found, showing fallback message');
+                container.innerHTML = '<div style="grid-column: 1/-1; text-align: center; padding: 2rem;">No products found in this category.</div>';
+            } else {
+                console.log('Rendering products:', paginatedProducts.length);
+                container.innerHTML = paginatedProducts.map(product => 
+                    this.createProductCard(product)
+                ).join('');
+            }
 
             // Add event listeners
             this.attachProductCardListeners(container);
@@ -294,80 +334,6 @@ class RestaurantSystem {
     goToPage(pageNum) {
         this.currentPageNum = pageNum;
         this.loadProducts();
-    }
-
-    // Menu Upload Functionality
-    setupMenuUpload() {
-        const uploadArea = document.getElementById('uploadArea');
-        const fileInput = document.getElementById('menuImageInput');
-        const uploadProgress = document.getElementById('uploadProgress');
-
-        // File input change event
-        fileInput.addEventListener('change', (e) => {
-            const file = e.target.files[0];
-            if (file) {
-                this.processMenuFile(file);
-            }
-        });
-
-        // Drag and drop events
-        uploadArea.addEventListener('dragover', (e) => {
-            e.preventDefault();
-            uploadArea.classList.add('dragover');
-        });
-
-        uploadArea.addEventListener('dragleave', (e) => {
-            e.preventDefault();
-            uploadArea.classList.remove('dragover');
-        });
-
-        uploadArea.addEventListener('drop', (e) => {
-            e.preventDefault();
-            uploadArea.classList.remove('dragover');
-            
-            const file = e.dataTransfer.files[0];
-            if (file && (file.type.startsWith('image/') || file.type === 'application/pdf')) {
-                this.processMenuFile(file);
-            } else {
-                this.showToast('Please upload an image or PDF file', 'error');
-            }
-        });
-
-        // Click to upload
-        uploadArea.addEventListener('click', () => {
-            fileInput.click();
-        });
-    }
-
-    async processMenuFile(file) {
-        const uploadProgress = document.getElementById('uploadProgress');
-        const uploadArea = document.getElementById('uploadArea');
-        
-        try {
-            // Show progress
-            uploadArea.style.display = 'none';
-            uploadProgress.style.display = 'block';
-            
-            // Process with Veryfi API
-            const success = await loadMenuFromVeryfi(file);
-            
-            if (success) {
-                // Reload menu with new data
-                this.loadCategories();
-                this.loadProducts();
-                this.showToast('Menu uploaded and processed successfully!', 'success');
-            } else {
-                this.showToast('Failed to process menu. Using default data.', 'warning');
-            }
-            
-        } catch (error) {
-            console.error('Error processing menu file:', error);
-            this.showToast('Error processing menu. Please try again.', 'error');
-        } finally {
-            // Hide progress
-            uploadProgress.style.display = 'none';
-            uploadArea.style.display = 'block';
-        }
     }
 
     // Product Details
@@ -666,8 +632,16 @@ class RestaurantSystem {
 
     hideLoading() {
         document.getElementById('loading').style.display = 'none';
-        document.getElementById('menuProducts').style.display = 'grid';
+        const menuProducts = document.getElementById('menuProducts');
+        menuProducts.style.display = 'grid';
+        menuProducts.style.visibility = 'visible';
         document.getElementById('pagination').style.display = 'flex';
+        
+        // Debug: Log the number of products loaded
+        const productCards = document.querySelectorAll('#menuProducts .product-card');
+        console.log('Products loaded:', productCards.length);
+        console.log('Menu products container display:', menuProducts.style.display);
+        console.log('Menu products container HTML:', menuProducts.innerHTML.substring(0, 200) + '...');
     }
 
     showToast(message, type = 'success') {
@@ -717,5 +691,17 @@ class RestaurantSystem {
 // Initialize the restaurant system
 let restaurantSystem;
 document.addEventListener('DOMContentLoaded', () => {
+    // Simple test - load menu data directly
+    console.log('Loading menu data...');
+    
+    // Force load the menu data
+    if (typeof loadDefaultMenuData === 'function') {
+        loadDefaultMenuData();
+        console.log('Menu data loaded:', {
+            categories: restaurantData.categories.length,
+            products: restaurantData.products.length
+        });
+    }
+    
     restaurantSystem = new RestaurantSystem();
 });
