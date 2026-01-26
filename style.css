@@ -40,6 +40,44 @@ body.dark-mode {
     background-color: #1a1a1a;
 }
 
+/* Dark Mode Footer Overrides */
+body.dark-mode .footer {
+    background: linear-gradient(135deg, #0f1419 0%, #1a252f 100%);
+}
+
+body.dark-mode .footer-section h3 {
+    color: var(--primary-color);
+}
+
+body.dark-mode .footer-section p {
+    color: #bdc3c7;
+}
+
+body.dark-mode .footer-section ul li {
+    color: #bdc3c7;
+}
+
+body.dark-mode .footer-section ul li i {
+    color: var(--secondary-color);
+}
+
+body.dark-mode .footer-section a {
+    color: #bdc3c7;
+}
+
+body.dark-mode .social-links a {
+    background: rgba(255, 255, 255, 0.1);
+}
+
+body.dark-mode .social-links a:hover {
+    background: var(--primary-color);
+}
+
+body.dark-mode .footer-bottom {
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    color: #bdc3c7;
+}
+
 .container {
     max-width: 1200px;
     margin: 0 auto;
