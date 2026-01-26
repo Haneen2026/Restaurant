@@ -206,12 +206,12 @@ class RestaurantSystem {
         const container = document.querySelector('.category-nav');
         const categoriesHTML = restaurantData.categories.map(category => 
             `<button class="category-btn" data-category="${category.id}">
-                ${category.icon} ${category.name}
+                <span>${category.icon} ${category.name}</span>
             </button>`
         ).join('');
 
         container.innerHTML = `
-            <button class="category-btn active" data-category="all">All</button>
+            <button class="category-btn active" data-category="all"><span>All</span></button>
             ${categoriesHTML}
         `;
 
@@ -222,6 +222,7 @@ class RestaurantSystem {
                 btn.classList.add('active');
                 this.currentCategory = btn.dataset.category;
                 this.currentPageNum = 1;
+                window.scrollTo(0, 0); // Scroll to top when category changes
                 this.loadProducts();
             });
         });
@@ -232,6 +233,7 @@ class RestaurantSystem {
         document.getElementById('vegetarianFilter').addEventListener('change', (e) => {
             this.vegetarianOnly = e.target.checked;
             this.currentPageNum = 1;
+            window.scrollTo(0, 0); // Scroll to top when filter changes
             this.loadProducts();
         });
 
@@ -239,6 +241,7 @@ class RestaurantSystem {
         document.getElementById('searchInput').addEventListener('input', (e) => {
             this.searchTerm = e.target.value.toLowerCase();
             this.currentPageNum = 1;
+            window.scrollTo(0, 0); // Scroll to top when searching
             this.loadProducts();
         });
     }
@@ -333,6 +336,7 @@ class RestaurantSystem {
 
     goToPage(pageNum) {
         this.currentPageNum = pageNum;
+        window.scrollTo(0, 0); // Scroll to top when changing pages
         this.loadProducts();
     }
 
