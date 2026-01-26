@@ -242,7 +242,19 @@ function loadDefaultMenuData() {
 }
 
 // Initialize with default data
-loadDefaultMenuData();
+// loadDefaultMenuData(); // Commented out - will be called from script.js
+
+// Ensure restaurantData is available globally
+if (typeof restaurantData === 'undefined') {
+    console.error('restaurantData is not defined!');
+    loadDefaultMenuData();
+}
+
+// Force load data if not already loaded
+if (restaurantData && restaurantData.products.length === 0) {
+    console.log('Force loading default menu data');
+    loadDefaultMenuData();
+}
 
 function truncateText(text, maxLength) {
     return text.length > maxLength ? text.substring(0, maxLength) + '...' : text;
@@ -262,4 +274,12 @@ function getPopularProducts() {
 
 function getRelatedProducts(productId, categoryId) {
     return restaurantData.products.filter(p => p.categoryId === categoryId && p.id !== productId).slice(0, 4);
+}
+
+// Immediate data load test
+console.log('Content.js loaded - checking data...');
+if (typeof restaurantData !== 'undefined' && restaurantData.products.length === 0) {
+    console.log('Loading menu data immediately...');
+    loadDefaultMenuData();
+    console.log('Data loaded:', restaurantData.products.length, 'products');
 }
