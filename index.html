@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Delicious Bites Restaurant</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body>
+    <!-- Header -->
+    <header class="header" id="header">
+        <div class="container">
+            <div class="header-content">
+                <div class="logo">
+                    <i class="fas fa-utensils"></i>
+                    <span>Delicious Bites</span>
+                
+                <nav class="nav">
+                    <ul class="nav-list">
+                        <li><a href="#home" class="nav-link active" data-page="home">Home</a></li>
+                        <li><a href="#menu" class="nav-link" data-page="menu">Menu</a></li>
+                        <li><a href="#about" class="nav-link" data-page="about">About</a></li>
+                        <li><a href="#contact" class="nav-link" data-page="contact">Contact</a></li>
+                    </ul>
+                </nav>
+                
+                <div class="header-actions">
+                    <button class="dark-mode-toggle" id="darkModeToggle">
+                        <i class="fas fa-moon"></i>
+                    </button>
+                    <button class="cart-btn" id="cartBtn">
+                        <i class="fas fa-shopping-cart"></i>
+                        <span class="cart-count" id="cartCount">0</span>
+                    </button>
+                    <button class="order-now-btn" id="orderNowBtn">Order Now</button>
+                
+                <button class="mobile-menu-toggle" id="mobileMenuToggle">
+                    <i class="fas fa-bars"></i>
+                </button>
+    </header>
+
+    <!-- Cart Dropdown -->
+    <div class="cart-dropdown" id="cartDropdown">
+        <div class="cart-header">
+            <h3>Your Cart</h3>
+            <button class="close-cart" id="closeCart">&times;</button>
+        <div class="cart-items" id="cartItems">
+            <p class="empty-cart">Your cart is empty</p>
+        <div class="cart-footer">
+            <div class="cart-total">
+                <span>Total: <span id="cartTotal">$0.00</span></span>
+            <button class="checkout-btn" id="checkoutBtn">Checkout</button>
+
+    <!-- Main Content -->
+    <main class="main">
+        <!-- Home Page -->
+        <section class="page active" id="homePage">
+            <!-- Hero Section -->
+            <section class="hero">
+                <div class="container">
+                    <div class="hero-content">
+                        <h1>Welcome to Delicious Bites</h1>
+                        <p>Experience the finest dining with our carefully crafted menu</p>
+                        <button class="cta-button" id="heroOrderBtn">Order Now</button>
+            </section>
+
+            <!-- Featured Products -->
+            <section class="featured-products">
+                <div class="container">
+                    <h2>Featured Products</h2>
+                    <div class="products-grid" id="featuredProducts">
+                        <!-- Products will be loaded here -->
+            </section>
+
+            <!-- Popular Items -->
+            <section class="popular-items">
+                <div class="container">
+                    <h2>Popular Items</h2>
+                    <div class="products-grid" id="popularProducts">
+                        <!-- Products will be loaded here -->
+            </section>
+
+            <!-- Why Choose Us -->
+            <section class="why-choose-us">
+                <div class="container">
+                    <h2>Why Choose Us</h2>
+                    <div class="features-grid">
+                        <div class="feature-card">
+                            <i class="fas fa-leaf"></i>
+                            <h3>Fresh Ingredients</h3>
+                            <p>We use only the freshest ingredients sourced locally</p>
+                        <div class="feature-card">
+                            <i class="fas fa-truck"></i>
+                            <h3>Fast Delivery</h3>
+                            <p>Quick and reliable delivery to your doorstep</p>
+                        <div class="feature-card">
+                            <i class="fas fa-award"></i>
+                            <h3>Quality Food</h3>
+                            <p>Expert chefs preparing delicious meals</p>
+            </section>
+
+            <!-- Order Section -->
+            <section class="order-section">
+                <div class="container">
+                    <h2>Ready to Order?</h2>
+                    <p>Browse our full menu and place your order now</p>
+                    <button class="cta-button" id="viewMenuBtn">View Menu</button>
+            </section>
+        </section>
+
+        <!-- Menu Page -->
+        <section class="page" id="menuPage">
+            <div class="container">
+                <h1>Our Menu</h1>
+                
+                <!-- Category Navigation -->
+                <div class="category-nav">
+                    <button class="category-btn active" data-category="all">All</button>
+                    <!-- Categories will be loaded here -->
+
+
+                <!-- Filters -->
+                <div class="filters">
+                    <div class="filter-group">
+                        <label class="filter-toggle">
+                            <input type="checkbox" id="vegetarianFilter">
+                            <span class="filter-slider"></span>
+                            <span>Vegetarian Only</span>
+                        </label>
+                    <div class="search-bar">
+                        <input type="text" id="searchInput" placeholder="Search for food...">
+                        <i class="fas fa-search"></i>
+
+                <!-- Loading State -->
+                <div class="loading" id="loading" style="display: none;">
+                    <div class="spinner"></div>
+                    <p>Loading delicious food...</p>
+
+                <!-- Products Grid -->
+                <div class="products-grid" id="menuProducts">
+                    <!-- Products will be loaded here -->
+
+                <!-- Pagination -->
+                <div class="pagination" id="pagination">
+                    <!-- Pagination will be loaded here -->
+        </section>
+
+        <!-- Product Details Page -->
+        <section class="page" id="productDetailsPage">
+            <div class="container">
+                <button class="back-btn" id="backToMenu">
+                    <i class="fas fa-arrow-left"></i> Back to Menu
+                </button>
+                
+                <div class="product-details" id="productDetails">
+                    <!-- Product details will be loaded here -->
+
+                <div class="related-products">
+                    <h2>Related Products</h2>
+                    <div class="products-grid" id="relatedProducts">
+                        <!-- Related products will be loaded here -->
+        </section>
+
+        <!-- About Page -->
+        <section class="page" id="aboutPage">
+            <div class="container">
+                <h1>About Us</h1>
+                <div class="about-content">
+                    <p>Welcome to Delicious Bites, where culinary excellence meets warm hospitality. Since our establishment, we've been dedicated to providing exceptional dining experiences with carefully crafted dishes made from the finest ingredients.</p>
+                    <p>Our team of expert chefs brings years of experience and passion to every dish, ensuring that each bite is a memorable one. Whether you're looking for a quick lunch or a special dinner, we have something to satisfy every palate.</p>
+        </section>
+
+        <!-- Contact Page -->
+        <section class="page" id="contactPage">
+            <div class="container">
+                <h1>Contact Us</h1>
+                <div class="contact-content">
+                    <div class="contact-info">
+                        <div class="contact-item">
+                            <i class="fas fa-phone"></i>
+                            <span>+1 (555) 123-4567</span>
+                        <div class="contact-item">
+                            <i class="fas fa-envelope"></i>
+                            <span>info@deliciousbites.com</span>
+                        <div class="contact-item">
+                            <i class="fas fa-map-marker-alt"></i>
+                            <span>123 Main Street, City, State 12345</span>
+        </section>
+
+        <!-- Checkout Page -->
+        <section class="page" id="checkoutPage">
+            <div class="container">
+                <h1>Checkout</h1>
+                <div class="checkout-content">
+                    <div class="checkout-form">
+                        <h2>Customer Details</h2>
+                        <form id="checkoutForm">
+                            <div class="form-group">
+                                <label for="customerName">Full Name</label>
+                                <input type="text" id="customerName" required>
+                            <div class="form-group">
+                                <label for="customerPhone">Phone Number</label>
+                                <input type="tel" id="customerPhone" required>
+                            <div class="form-group">
+                                <label for="customerAddress">Delivery Address</label>
+                                <textarea id="customerAddress" rows="3" required></textarea>
+                        </form>
+                    
+                    <div class="order-summary">
+                        <h2>Order Summary</h2>
+                        <div id="checkoutOrderSummary">
+                            <!-- Order summary will be loaded here -->
+                        <button class="place-order-btn" id="placeOrderBtn">Place Order</button>
+        </section>
+
+        <!-- Order Confirmation Page -->
+        <section class="page" id="confirmationPage">
+            <div class="container">
+                <div class="confirmation-content">
+                    <i class="fas fa-check-circle success-icon"></i>
+                    <h1>Order Confirmed!</h1>
+                    <p>Thank you for your order. We'll prepare it with care and deliver it to you soon.</p>
+                    <div class="order-details">
+                        <p><strong>Order Number:</strong> <span id="orderNumber"></span></p>
+                        <p><strong>Estimated Delivery:</strong> 30-45 minutes</p>
+                    <button class="continue-shopping-btn" id="continueShoppingBtn">Continue Shopping</button>
+        </section>
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <h3>Policies</h3>
+                    <ul>
+                        <li><a href="#privacy">Privacy Policy</a></li>
+                        <li><a href="#terms">Terms of Service</a></li>
+                        <li><a href="#refund">Refund Policy</a></li>
+                    </ul>
+                
+                <div class="footer-section">
+                    <h3>Contact & Support</h3>
+                    <ul>
+                        <li><i class="fas fa-phone"></i> +1 (555) 123-4567</li>
+                        <li><i class="fas fa-envelope"></i> info@deliciousbites.com</li>
+                        <li><i class="fas fa-map-marker-alt"></i> 123 Main Street, City, State 12345</li>
+                    </ul>
+                
+                <div class="footer-section">
+                    <h3>Follow Us</h3>
+                    <div class="social-links">
+                        <a href="https://facebook.com/deliciousbites" target="_blank"><i class="fab fa-facebook"></i></a>
+                        <a href="https://instagram.com/deliciousbites" target="_blank"><i class="fab fa-instagram"></i></a>
+                        <a href="https://twitter.com/deliciousbites" target="_blank"><i class="fab fa-twitter"></i></a>
+                
+                <div class="footer-section">
+                    <h3>Working Hours</h3>
+                    <ul>
+                        <li>Mon-Thu: 11:00 AM - 10:00 PM</li>
+                        <li>Fri-Sat: 11:00 AM - 11:00 PM</li>
+                        <li>Sunday: 12:00 PM - 9:00 PM</li>
+                    </ul>
+            
+            <div class="footer-bottom">
+                <p>&copy; 2026 Delicious Bites Restaurant. All rights reserved.</p>
+    </footer>
+
+    <!-- Toast Notification -->
+    <div class="toast" id="toast">
+        <span id="toastMessage"></span>
+
+    <script src="content.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>

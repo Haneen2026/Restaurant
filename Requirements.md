@@ -44,7 +44,6 @@ Build a Fully responsive (desktop, tablet, mobile) Restaurant system, the webpag
 4.  2 main integrations:
     a. API Data for products and categories  
     b. Google sheet for orders
-
 5.  2 main modules:
     a. cart module
     -  Add / remove products
@@ -59,3 +58,4 @@ Build a Fully responsive (desktop, tablet, mobile) Restaurant system, the webpag
     -   Save order to Google Sheet (https://docs.google.com/spreadsheets/d/1aTZsNYlDxrLitXRGvQ1bOJXKHi2rIV6pYOKKr9Xyz-s/edit?gid=0#gid=0)
 
 Error handling (empty results, API failure)
+
