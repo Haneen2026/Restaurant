@@ -264,23 +264,8 @@
         <div class="container">
             <div class="footer-content">
                 <div class="footer-section">
-                    <h3>Policies</h3>
-                    <ul>
-                        <li><a href="#privacy">Privacy Policy</a></li>
-                        <li><a href="#terms">Terms of Service</a></li>
-                        <li><a href="#refund">Refund Policy</a></li>
-                    </ul>
-                
-                <div class="footer-section">
-                    <h3>Contact & Support</h3>
-                    <ul>
-                        <li><i class="fas fa-phone"></i> +1 (555) 123-4567</li>
-                        <li><i class="fas fa-envelope"></i> info@deliciousbites.com</li>
-                        <li><i class="fas fa-map-marker-alt"></i> 123 Main Street, City, State 12345</li>
-                    </ul>
-                
-                <div class="footer-section">
-                    <h3>Follow Us</h3>
+                    <h3><i class="fas fa-utensils"></i> Delicious Bites</h3>
+                    <p>Experience the finest dining with our carefully crafted menu made from the freshest ingredients.</p>
                     <div class="social-links">
                         <a href="https://facebook.com/deliciousbites" target="_blank"><i class="fab fa-facebook"></i></a>
                         <a href="https://instagram.com/deliciousbites" target="_blank"><i class="fab fa-instagram"></i></a>
@@ -289,7 +274,25 @@
                 </div>
                 
                 <div class="footer-section">
-                    <h3>Working Hours</h3>
+                    <h3><i class="fas fa-info-circle"></i> Policies</h3>
+                    <ul>
+                        <li><a href="#" onclick="showPolicy('privacy'); return false;">Privacy Policy</a></li>
+                        <li><a href="#" onclick="showPolicy('terms'); return false;">Terms of Service</a></li>
+                        <li><a href="#" onclick="showPolicy('refund'); return false;">Refund Policy</a></li>
+                    </ul>
+                </div>
+                
+                <div class="footer-section">
+                    <h3><i class="fas fa-phone-alt"></i> Contact & Support</h3>
+                    <ul>
+                        <li><i class="fas fa-phone"></i> +962 7 880 26543</li>
+                        <li><i class="fas fa-envelope"></i> info@deliciousbites.com</li>
+                        <li><i class="fas fa-map-marker-alt"></i> Amman, Jordan</li>
+                    </ul>
+                </div>
+                
+                <div class="footer-section">
+                    <h3><i class="fas fa-clock"></i> Working Hours</h3>
                     <ul>
                         <li>Mon-Thu: 11:00 AM - 10:00 PM</li>
                         <li>Fri-Sat: 11:00 AM - 11:00 PM</li>
@@ -299,9 +302,22 @@
             </div>
             
             <div class="footer-bottom">
-                <p>&copy; 2026 Delicious Bites Restaurant. All rights reserved.</p>
+                <p>&copy; 2026 Delicious Bites Restaurant. All rights reserved. | Made with <i class="fas fa-heart" style="color: #e74c3c;"></i> in Amman, Jordan</p>
             </div>
         </footer>
+
+    <!-- Policy Modal -->
+    <div id="policyModal" class="policy-modal">
+        <div class="policy-content">
+            <div class="policy-header">
+                <h2 id="policyTitle">Policy</h2>
+                <button class="policy-close" onclick="closePolicyModal()">&times;</button>
+            </div>
+            <div class="policy-body" id="policyBody">
+                <!-- Policy content will be loaded here -->
+            </div>
+        </div>
+    </div>
 
     <!-- Toast Notification -->
     <div class="toast" id="toast">

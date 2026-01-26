@@ -657,6 +657,107 @@ class RestaurantSystem {
         }, 3000);
     }
 
+    // Policy Modal Functions
+    showPolicy(type) {
+        const modal = document.getElementById('policyModal');
+        const title = document.getElementById('policyTitle');
+        const body = document.getElementById('policyBody');
+        
+        const policies = {
+            privacy: {
+                title: 'Privacy Policy',
+                content: `
+                    <h3>Information We Collect</h3>
+                    <p>We collect information you provide directly to us, such as when you create an account, place an order, or contact us for support.</p>
+                    
+                    <h3>How We Use Your Information</h3>
+                    <ul>
+                        <li>To process and fulfill your orders</li>
+                        <li>To provide customer support</li>
+                        <li>To improve our services</li>
+                        <li>To send you promotional offers (with your consent)</li>
+                    </ul>
+                    
+                    <h3>Data Protection</h3>
+                    <p>We implement appropriate security measures to protect your personal information against unauthorized access, alteration, disclosure, or destruction.</p>
+                    
+                    <h3>Your Rights</h3>
+                    <p>You have the right to access, update, or delete your personal information at any time.</p>
+                `
+            },
+            terms: {
+                title: 'Terms of Service',
+                content: `
+                    <h3>Acceptance of Terms</h3>
+                    <p>By accessing and using Delicious Bites Restaurant's website and services, you accept and agree to be bound by these terms.</p>
+                    
+                    <h3>Ordering and Payment</h3>
+                    <ul>
+                        <li>All orders are subject to availability</li>
+                        <li>Prices are subject to change without notice</li>
+                        <li>Payment must be made at the time of ordering</li>
+                        <li>We accept various payment methods as displayed on our website</li>
+                    </ul>
+                    
+                    <h3>Delivery and Service</h3>
+                    <p>We strive to deliver your order within the estimated time. However, delivery times may vary due to factors beyond our control.</p>
+                    
+                    <h3>Cancellation and Refunds</h3>
+                    <p>Cancellations must be made within 30 minutes of placing an order. Refunds are provided according to our refund policy.</p>
+                    
+                    <h3>Limitation of Liability</h3>
+                    <p>Delicious Bites Restaurant shall not be liable for any indirect, incidental, or consequential damages arising from your use of our services.</p>
+                `
+            },
+            refund: {
+                title: 'Refund Policy',
+                content: `
+                    <h3>Refund Eligibility</h3>
+                    <p>We want you to be completely satisfied with your order. If you're not satisfied, we're here to help.</p>
+                    
+                    <h3>When You Can Request a Refund</h3>
+                    <ul>
+                        <li>Wrong items delivered</li>
+                        <li>Food quality issues</li>
+                        <li>Damaged packaging</li>
+                        <li>Missing items from your order</li>
+                    </ul>
+                    
+                    <h3>How to Request a Refund</h3>
+                    <p>To request a refund, please contact us within 24 hours of receiving your order:</p>
+                    <ul>
+                        <li>Call: +962 7 880 26543</li>
+                        <li>Email: info@deliciousbites.com</li>
+                        <li>Visit our restaurant in Amman, Jordan</li>
+                    </ul>
+                    
+                    <h3>Refund Process</h3>
+                    <p>Once we receive your refund request, we will review it within 24-48 hours. Approved refunds will be processed within 5-7 business days.</p>
+                    
+                    <h3>Non-Refundable Items</h3>
+                    <ul>
+                        <li>Orders cancelled after 30 minutes of placement</li>
+                        <li>Perishable items that cannot be returned</li>
+                        <li>Items damaged due to customer mishandling</li>
+                    </ul>
+                `
+            }
+        };
+        
+        const policy = policies[type];
+        title.textContent = policy.title;
+        body.innerHTML = policy.content;
+        
+        modal.style.display = 'block';
+        document.body.style.overflow = 'hidden';
+    }
+
+    closePolicyModal() {
+        const modal = document.getElementById('policyModal');
+        modal.style.display = 'none';
+        document.body.style.overflow = 'auto';
+    }
+
     // Dark Mode
     setupDarkMode() {
         const darkMode = localStorage.getItem('darkMode') === 'true';
@@ -705,3 +806,16 @@ document.addEventListener('DOMContentLoaded', () => {
     
     restaurantSystem = new RestaurantSystem();
 });
+
+// Global Policy Functions
+function showPolicy(type) {
+    if (restaurantSystem) {
+        restaurantSystem.showPolicy(type);
+    }
+}
+
+function closePolicyModal() {
+    if (restaurantSystem) {
+        restaurantSystem.closePolicyModal();
+    }
+}
