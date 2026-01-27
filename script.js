@@ -10,6 +10,11 @@ class RestaurantSystem {
         this.searchTerm = '';
         this.vegetarianOnly = false;
         this.priceRange = 'all';
+        this.activeFilters = {
+            vegetarian: false,
+            price: 'all',
+            search: ''
+        };
         
         this.init();
     }
@@ -19,6 +24,8 @@ class RestaurantSystem {
         this.loadHomePage();
         this.updateCartUI();
         this.setupDarkMode();
+        this.setupScrollToTop();
+        this.setupStickyHeader();
     }
 
     // Event Listeners
@@ -233,26 +240,245 @@ class RestaurantSystem {
         // Vegetarian filter
         document.getElementById('vegetarianFilter').addEventListener('change', (e) => {
             this.vegetarianOnly = e.target.checked;
+            this.activeFilters.vegetarian = e.target.checked;
             this.currentPageNum = 1;
             window.scrollTo(0, 0); // Scroll to top when filter changes
             this.loadProducts();
+            this.updateFilterBadges();
+            this.updateFilterSummary();
         });
 
         // Search
         document.getElementById('searchInput').addEventListener('input', (e) => {
             this.searchTerm = e.target.value.toLowerCase();
+            this.activeFilters.search = e.target.value;
             this.currentPageNum = 1;
             window.scrollTo(0, 0); // Scroll to top when searching
             this.loadProducts();
+            this.updateFilterBadges();
+            this.updateFilterSummary();
+            
+            // Show/hide clear button
+            const clearBtn = document.getElementById('searchClearBtn');
+            if (e.target.value) {
+                clearBtn.style.display = 'flex';
+            } else {
+                clearBtn.style.display = 'none';
+            }
+        });
+
+        // Search clear button
+        document.getElementById('searchClearBtn').addEventListener('click', () => {
+            document.getElementById('searchInput').value = '';
+            this.searchTerm = '';
+            this.activeFilters.search = '';
+            this.currentPageNum = 1;
+            window.scrollTo(0, 0);
+            this.loadProducts();
+            this.updateFilterBadges();
+            this.updateFilterSummary();
+            document.getElementById('searchClearBtn').style.display = 'none';
         });
 
         // Price range filter
         document.getElementById('priceRangeFilter').addEventListener('change', (e) => {
             this.priceRange = e.target.value;
+            this.activeFilters.price = e.target.value;
             this.currentPageNum = 1;
             window.scrollTo(0, 0);
             this.loadProducts();
+            this.updateFilterBadges();
+            this.updateFilterSummary();
         });
+
+        // Reset filters button
+        document.getElementById('resetFiltersBtn').addEventListener('click', () => {
+            this.resetAllFilters();
+        });
+    }
+
+    updateFilterBadges() {
+        // Update vegetarian badge
+        const vegetarianBadge = document.getElementById('vegetarianBadge');
+        const vegetarianCount = this.vegetarianOnly ? 
+            restaurantData.products.filter(p => p.isVegetarian).length : 0;
+        
+        if (vegetarianCount > 0) {
+            vegetarianBadge.textContent = vegetarianCount;
+            vegetarianBadge.classList.add('active');
+        } else {
+            vegetarianBadge.classList.remove('active');
+        }
+
+        // Update price badge
+        const priceBadge = document.getElementById('priceBadge');
+        let priceCount = 0;
+        
+        if (this.priceRange !== 'all') {
+            const [minPrice, maxPrice] = this.priceRange.split('-').map(Number);
+            priceCount = restaurantData.products.filter(p => 
+                p.price >= minPrice && p.price <= maxPrice
+            ).length;
+        }
+        
+        if (priceCount > 0) {
+            priceBadge.textContent = priceCount;
+            priceBadge.classList.add('active');
+        } else {
+            priceBadge.classList.remove('active');
+        }
+
+        // Update search badge
+        const searchBadge = document.getElementById('searchBadge');
+        let searchCount = 0;
+        
+        if (this.searchTerm) {
+            searchCount = restaurantData.products.filter(p => 
+                p.name.toLowerCase().includes(this.searchTerm) ||
+                p.description.toLowerCase().includes(this.searchTerm)
+            ).length;
+        }
+        
+        if (searchCount > 0) {
+            searchBadge.textContent = searchCount;
+            searchBadge.classList.add('active');
+        } else {
+            searchBadge.classList.remove('active');
+        }
+    }
+
+    updateFilterSummary() {
+        const filterSummary = document.getElementById('filterSummary');
+        const activeFilterTags = document.getElementById('activeFilterTags');
+        const resultsCount = document.getElementById('resultsCount');
+        
+        const hasActiveFilters = this.vegetarianOnly || this.priceRange !== 'all' || this.searchTerm;
+        
+        if (hasActiveFilters) {
+            filterSummary.style.display = 'flex';
+            
+            // Clear existing tags
+            activeFilterTags.innerHTML = '';
+            
+            // Add vegetarian tag
+            if (this.vegetarianOnly) {
+                const vegetarianTag = document.createElement('span');
+                vegetarianTag.className = 'filter-tag';
+                vegetarianTag.innerHTML = `Vegetarian <i class="fas fa-times"></i>`;
+                vegetarianTag.onclick = () => this.removeFilter('vegetarian');
+                activeFilterTags.appendChild(vegetarianTag);
+            }
+            
+            // Add price tag
+            if (this.priceRange !== 'all') {
+                const priceTag = document.createElement('span');
+                priceTag.className = 'filter-tag';
+                const priceText = document.getElementById('priceRangeFilter').options[document.getElementById('priceRangeFilter').selectedIndex].text;
+                priceTag.innerHTML = `${priceText} <i class="fas fa-times"></i>`;
+                priceTag.onclick = () => this.removeFilter('price');
+                activeFilterTags.appendChild(priceTag);
+            }
+            
+            // Add search tag
+            if (this.searchTerm) {
+                const searchTag = document.createElement('span');
+                searchTag.className = 'filter-tag';
+                searchTag.innerHTML = `"${this.searchTerm}" <i class="fas fa-times"></i>`;
+                searchTag.onclick = () => this.removeFilter('search');
+                activeFilterTags.appendChild(searchTag);
+            }
+            
+            // Update results count
+            const totalProducts = this.getFilteredProductsCount();
+            resultsCount.textContent = totalProducts;
+        } else {
+            filterSummary.style.display = 'none';
+        }
+    }
+
+    getFilteredProductsCount() {
+        let products = getProductsByCategory(
+            this.currentCategory === 'all' ? null : parseInt(this.currentCategory)
+        );
+
+        // Apply filters
+        if (this.vegetarianOnly) {
+            products = products.filter(p => p.isVegetarian);
+        }
+
+        if (this.searchTerm) {
+            products = products.filter(p => 
+                p.name.toLowerCase().includes(this.searchTerm) ||
+                p.description.toLowerCase().includes(this.searchTerm)
+            );
+        }
+
+        // Apply price range filter
+        if (this.priceRange !== 'all') {
+            const [minPrice, maxPrice] = this.priceRange.split('-').map(Number);
+            products = products.filter(p => 
+                p.price >= minPrice && p.price <= maxPrice
+            );
+        }
+
+        return products.length;
+    }
+
+    removeFilter(filterType) {
+        switch(filterType) {
+            case 'vegetarian':
+                this.vegetarianOnly = false;
+                this.activeFilters.vegetarian = false;
+                document.getElementById('vegetarianFilter').checked = false;
+                break;
+            case 'price':
+                this.priceRange = 'all';
+                this.activeFilters.price = 'all';
+                document.getElementById('priceRangeFilter').value = 'all';
+                break;
+            case 'search':
+                this.searchTerm = '';
+                this.activeFilters.search = '';
+                document.getElementById('searchInput').value = '';
+                document.getElementById('searchClearBtn').style.display = 'none';
+                break;
+        }
+        
+        this.currentPageNum = 1;
+        window.scrollTo(0, 0);
+        this.loadProducts();
+        this.updateFilterBadges();
+        this.updateFilterSummary();
+    }
+
+    resetAllFilters() {
+        // Reset all filter states
+        this.vegetarianOnly = false;
+        this.priceRange = 'all';
+        this.searchTerm = '';
+        this.activeFilters = {
+            vegetarian: false,
+            price: 'all',
+            search: ''
+        };
+        
+        // Reset UI elements
+        document.getElementById('vegetarianFilter').checked = false;
+        document.getElementById('priceRangeFilter').value = 'all';
+        document.getElementById('searchInput').value = '';
+        document.getElementById('searchClearBtn').style.display = 'none';
+        
+        // Reset badges
+        document.getElementById('vegetarianBadge').classList.remove('active');
+        document.getElementById('priceBadge').classList.remove('active');
+        document.getElementById('searchBadge').classList.remove('active');
+        
+        // Hide filter summary
+        document.getElementById('filterSummary').style.display = 'none';
+        
+        this.currentPageNum = 1;
+        window.scrollTo(0, 0);
+        this.loadProducts();
     }
 
     loadProducts() {
@@ -601,10 +827,44 @@ class RestaurantSystem {
         return 'ORD' + Date.now().toString().slice(-8);
     }
 
-    // Utility Functions
+    setupScrollToTop() {
+        const scrollBtn = document.getElementById('scrollToTopBtn');
+        
+        window.addEventListener('scroll', () => {
+            if (window.pageYOffset > 300) {
+                scrollBtn.classList.add('visible');
+            } else {
+                scrollBtn.classList.remove('visible');
+            }
+        });
+        
+        scrollBtn.addEventListener('click', () => {
+            window.scrollTo({
+                top: 0,
+                behavior: 'smooth'
+            });
+        });
+    }
+
+    setupStickyHeader() {
+        const header = document.querySelector('header');
+        
+        window.addEventListener('scroll', () => {
+            if (window.pageYOffset > 100) {
+                header.classList.add('scrolled');
+            } else {
+                header.classList.remove('scrolled');
+            }
+        });
+    }
     createProductCard(product) {
+        const isPopular = product.isPopular || false;
+        const isVegetarian = product.isVegetarian || false;
+        const popularClass = isPopular ? 'popular' : '';
+        const vegetarianClass = isVegetarian ? 'vegetarian' : '';
+        
         return `
-            <div class="product-card" onclick="restaurantSystem.showProductDetails(${product.id})">
+            <div class="product-card ${popularClass} ${vegetarianClass}" onclick="restaurantSystem.showProductDetails(${product.id})">
                 <img src="${product.image}" alt="${product.name}" class="product-image">
                 <div class="product-info">
                     <h3 class="product-name">${product.name}</h3>

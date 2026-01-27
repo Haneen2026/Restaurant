@@ -241,13 +241,14 @@
                     <!-- Categories will be loaded here -->
                 </div>
 
-                <!-- Filters -->
+                <!-- Enhanced Filters -->
                 <div class="filters">
                     <div class="filter-group">
                         <label class="filter-toggle">
                             <input type="checkbox" id="vegetarianFilter">
                             <span class="filter-slider"></span>
                             <span>Vegetarian Only</span>
+                            <span class="filter-badge" id="vegetarianBadge">0</span>
                         </label>
                     </div>
                     <div class="filter-group">
@@ -260,10 +261,34 @@
                             <option value="30-40">$30 - $40</option>
                             <option value="40-999">$40+</option>
                         </select>
+                        <span class="filter-badge" id="priceBadge">0</span>
                     </div>
-                    <div class="search-bar">
-                        <input type="text" id="searchInput" placeholder="Search for food...">
-                        <i class="fas fa-search"></i>
+                    <div class="filter-group search-group">
+                        <div class="search-bar">
+                            <input type="text" id="searchInput" placeholder="Search for food...">
+                            <i class="fas fa-search"></i>
+                            <button class="search-clear-btn" id="searchClearBtn" style="display: none;">
+                                <i class="fas fa-times"></i>
+                            </button>
+                        </div>
+                        <span class="filter-badge" id="searchBadge">0</span>
+                    </div>
+                    <div class="filter-group">
+                        <button class="reset-filters-btn" id="resetFiltersBtn">
+                            <i class="fas fa-redo"></i>
+                            Reset All
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Filter Summary -->
+                <div class="filter-summary" id="filterSummary" style="display: none;">
+                    <div class="active-filters">
+                        <span class="filter-summary-text">Active filters:</span>
+                        <div class="active-filter-tags" id="activeFilterTags"></div>
+                    </div>
+                    <div class="results-count">
+                        <span id="resultsCount">0</span> results found
                     </div>
                 </div>
 
@@ -435,8 +460,13 @@
         <span id="toastMessage"></span>
     </div>
 
+        <!-- Scroll to Top Button -->
+        <button class="scroll-to-top" id="scrollToTopBtn">
+            <i class="fas fa-arrow-up"></i>
+        </button>
+
     <script src="content.js"></script>
+    <script src="large_menu_data.js"></script>
     <script src="script.js"></script>
 </body>
 </html>
-
