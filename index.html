@@ -17,27 +17,27 @@
                     <span>Delicious Bites</span>
                 </div>
                 
-                <nav class="nav">
+                <nav class="nav" id="mainNav">
                     <ul class="nav-list">
-                        <li><a href="#home" class="nav-link active" data-page="home">Home</a></li>
-                        <li><a href="#menu" class="nav-link" data-page="menu">Menu</a></li>
-                        <li><a href="#about" class="nav-link" data-page="about">About</a></li>
-                        <li><a href="#contact" class="nav-link" data-page="contact">Contact</a></li>
+                        <li><a href="#home" class="nav-link active" data-page="home" aria-label="Home page" tabindex="0">Home</a></li>
+                        <li><a href="#menu" class="nav-link" data-page="menu" aria-label="Menu page" tabindex="0">Menu</a></li>
+                        <li><a href="#about" class="nav-link" data-page="about" aria-label="About page" tabindex="0">About</a></li>
+                        <li><a href="#contact" class="nav-link" data-page="contact" aria-label="Contact page" tabindex="0">Contact</a></li>
                     </ul>
                 </nav>
                 
                 <div class="header-actions">
-                    <button class="dark-mode-toggle" id="darkModeToggle">
+                    <button class="dark-mode-toggle" id="darkModeToggle" aria-label="Toggle dark mode" tabindex="0">
                         <i class="fas fa-moon"></i>
                     </button>
-                    <button class="cart-btn" id="cartBtn">
+                    <button class="cart-btn" id="cartBtn" aria-label="Shopping cart" tabindex="0">
                         <i class="fas fa-shopping-cart"></i>
-                        <span class="cart-count" id="cartCount">0</span>
+                        <span class="cart-count" id="cartCount" aria-label="Cart item count">0</span>
                     </button>
-                    <button class="order-now-btn" id="orderNowBtn">Order Now</button>
+                    <button class="order-now-btn" id="orderNowBtn" aria-label="Order now" tabindex="0">Order Now</button>
                 </div>
                 
-                <button class="mobile-menu-toggle" id="mobileMenuToggle">
+                <button class="mobile-menu-toggle" id="mobileMenuToggle" aria-label="Toggle mobile menu" tabindex="0" aria-expanded="false" aria-controls="mainNav">
                     <i class="fas fa-bars"></i>
                 </button>
             </div>
@@ -303,9 +303,25 @@
                     <!-- Products will be loaded here -->
                 </div>
 
-                <!-- Pagination -->
+                <!-- Enhanced Pagination -->
                 <div class="pagination" id="pagination">
                     <!-- Pagination will be loaded here -->
+                </div>
+
+                <!-- Page Size Selector -->
+                <div class="page-size-selector">
+                    <label class="page-size-label">Items per page:</label>
+                    <select id="pageSizeSelector" class="page-size-dropdown">
+                        <option value="6">6</option>
+                        <option value="12" selected>12</option>
+                        <option value="24">24</option>
+                        <option value="48">48</option>
+                    </select>
+                </div>
+
+                <!-- Page Info -->
+                <div class="page-info" id="pageInfo">
+                    Showing <span id="startItem">1</span>-<span id="endItem">12</span> of <span id="totalItems">0</span> items
                 </div>
             </div>
         </section>

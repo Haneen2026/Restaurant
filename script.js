@@ -1,3 +1,4 @@
+
 // Restaurant System JavaScript
 class RestaurantSystem {
     constructor() {
@@ -295,6 +296,30 @@ class RestaurantSystem {
         document.getElementById('resetFiltersBtn').addEventListener('click', () => {
             this.resetAllFilters();
         });
+
+        // Page size selector
+        document.getElementById('pageSizeSelector').addEventListener('change', (e) => {
+            this.itemsPerPage = parseInt(e.target.value);
+            this.currentPageNum = 1;
+            window.scrollTo(0, 0);
+            this.loadProducts();
+        });
+
+        // Keyboard navigation
+        document.addEventListener('keydown', (e) => {
+            if (this.currentPage === 'menu') {
+                if (e.key === 'ArrowLeft' && this.currentPageNum > 1) {
+                    e.preventDefault();
+                    this.goToPage(this.currentPageNum - 1);
+                } else if (e.key === 'ArrowRight') {
+                    e.preventDefault();
+                    const totalPages = Math.ceil(this.getFilteredProductsCount() / this.itemsPerPage);
+                    if (this.currentPageNum < totalPages) {
+                        this.goToPage(this.currentPageNum + 1);
+                    }
+                }
+            }
+        });
     }
 
     updateFilterBadges() {
@@ -559,28 +584,85 @@ class RestaurantSystem {
 
         let paginationHTML = '';
         
-        // Previous button
-        if (this.currentPageNum > 1) {
-            paginationHTML += `<button class="page-btn" onclick="restaurantSystem.goToPage(${this.currentPageNum - 1})">Previous</button>`;
-        }
-
-        // Page numbers
-        for (let i = 1; i <= totalPages; i++) {
-            paginationHTML += `<button class="page-btn ${i === this.currentPageNum ? 'active' : ''}" onclick="restaurantSystem.goToPage(${i})">${i}</button>`;
-        }
-
-        // Next button
-        if (this.currentPageNum < totalPages) {
-            paginationHTML += `<button class="page-btn" onclick="restaurantSystem.goToPage(${this.currentPageNum + 1})">Next</button>`;
-        }
+        // Smart pagination with ellipsis - page numbers only
+        const pages = this.getPaginationRange(totalPages);
+        
+        pages.forEach(page => {
+            if (page === '...') {
+                paginationHTML += '<span class="page-ellipsis">...</span>';
+            } else {
+                paginationHTML += `
+                    <button class="page-btn ${page === this.currentPageNum ? 'active' : ''}" 
+                            onclick="restaurantSystem.goToPage(${page})">
+                        ${page}
+                    </button>
+                `;
+            }
+        });
 
         container.innerHTML = paginationHTML;
+        
+        // Update page info
+        this.updatePageInfo();
+    }
+
+    getPaginationRange(totalPages) {
+        const current = this.currentPageNum;
+        const delta = 2;
+        const range = [];
+        const rangeWithDots = [];
+        let l;
+
+        for (let i = 1; i <= totalPages; i++) {
+            if (i === 1 || i === totalPages || (i >= current - delta && i <= current + delta)) {
+                range.push(i);
+            }
+        }
+
+        range.forEach((i) => {
+            if (l) {
+                if (i - l === 2) {
+                    rangeWithDots.push(l + 1);
+                } else if (i - l !== 1) {
+                    rangeWithDots.push('...');
+                }
+            }
+            rangeWithDots.push(i);
+            l = i;
+        });
+
+        return rangeWithDots;
+    }
+
+    updatePageInfo() {
+        const startItem = document.getElementById('startItem');
+        const endItem = document.getElementById('endItem');
+        const totalItems = document.getElementById('totalItems');
+        
+        const start = (this.currentPageNum - 1) * this.itemsPerPage + 1;
+        const end = Math.min(this.currentPageNum * this.itemsPerPage, this.getFilteredProductsCount());
+        const total = this.getFilteredProductsCount();
+        
+        startItem.textContent = start;
+        endItem.textContent = end;
+        totalItems.textContent = total;
     }
 
     goToPage(pageNum) {
+        // Add loading state to pagination
+        const paginationContainer = document.getElementById('pagination');
+        paginationContainer.classList.add('pagination-loading');
+        
         this.currentPageNum = pageNum;
         window.scrollTo(0, 0); // Scroll to top when changing pages
+        
+        // Load products with loading state
         this.loadProducts();
+        
+        // Remove loading state after a delay
+        setTimeout(() => {
+            paginationContainer.classList.remove('pagination-loading');
+        }, 800);
     }
 
     // Product Details
