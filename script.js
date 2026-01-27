@@ -9,6 +9,7 @@ class RestaurantSystem {
         this.currentPageNum = 1;
         this.searchTerm = '';
         this.vegetarianOnly = false;
+        this.priceRange = 'all';
         
         this.init();
     }
@@ -244,6 +245,14 @@ class RestaurantSystem {
             window.scrollTo(0, 0); // Scroll to top when searching
             this.loadProducts();
         });
+
+        // Price range filter
+        document.getElementById('priceRangeFilter').addEventListener('change', (e) => {
+            this.priceRange = e.target.value;
+            this.currentPageNum = 1;
+            window.scrollTo(0, 0);
+            this.loadProducts();
+        });
     }
 
     loadProducts() {
@@ -269,6 +278,14 @@ class RestaurantSystem {
                 products = products.filter(p => 
                     p.name.toLowerCase().includes(this.searchTerm) ||
                     p.description.toLowerCase().includes(this.searchTerm)
+                );
+            }
+
+            // Apply price range filter
+            if (this.priceRange !== 'all') {
+                const [minPrice, maxPrice] = this.priceRange.split('-').map(Number);
+                products = products.filter(p => 
+                    p.price >= minPrice && p.price <= maxPrice
                 );
             }
 
