@@ -728,10 +728,8 @@ class RestaurantSystem {
         const totalItems = this.cart.reduce((sum, item) => sum + item.quantity, 0);
         cartCount.textContent = totalItems;
 
-        // Update cart items
-        if (this.cart.length === 0) {
-            cartItems.innerHTML = '<p class="empty-cart">Your cart is empty</p>';
-        } else {
+        // Update cart items - only show items if cart has content
+        if (this.cart.length > 0) {
             cartItems.innerHTML = this.cart.map(item => `
                 <div class="cart-item">
                     <div class="cart-item-info">
@@ -746,6 +744,9 @@ class RestaurantSystem {
                     </div>
                 </div>
             `).join('');
+        } else {
+            // Leave cart items empty when cart is empty - message will show on click only
+            cartItems.innerHTML = '';
         }
 
         // Update cart total
@@ -755,7 +756,31 @@ class RestaurantSystem {
 
     toggleCartDropdown() {
         const dropdown = document.getElementById('cartDropdown');
+        
+        // Check if cart is empty when user clicks
+        if (this.cart.length === 0) {
+            // Show empty cart glassmorphism UI
+            this.showEmptyCartUI();
+            return;
+        }
+        
+        // If cart has items, toggle the dropdown normally
         dropdown.classList.toggle('active');
+    }
+
+    showEmptyCartUI() {
+        const emptyCartUI = document.getElementById('emptyCartUI');
+        emptyCartUI.classList.add('show');
+    }
+
+    hideEmptyCartUI() {
+        const emptyCartUI = document.getElementById('emptyCartUI');
+        emptyCartUI.classList.remove('show');
+    }
+
+    goToMenuFromEmptyCart() {
+        this.hideEmptyCartUI();
+        this.navigateToPage('menu');
     }
 
     closeCartDropdown() {

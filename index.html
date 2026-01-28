@@ -476,6 +476,26 @@
         <span id="toastMessage"></span>
     </div>
 
+    <!-- Empty Cart UI -->
+    <div class="empty-cart-ui" id="emptyCartUI">
+        <div class="empty-cart-card">
+            <div class="empty-cart-icon">
+                <i class="fas fa-shopping-cart"></i>
+            </div>
+            <h2 class="empty-cart-title">Your cart is empty</h2>
+            <p class="empty-cart-subtitle">Looks like you haven't added any delicious items yet. Browse our menu and add something tasty!</p>
+            <div class="empty-cart-actions">
+                <button class="empty-cart-btn" onclick="goToMenuFromEmptyCart()">
+                    <i class="fas fa-utensils"></i>
+                    Browse Menu
+                </button>
+                <button class="empty-cart-close" onclick="hideEmptyCartUI()">
+                    Close
+                </button>
+            </div>
+        </div>
+    </div>
+
         <!-- Scroll to Top Button -->
         <button class="scroll-to-top" id="scrollToTopBtn">
             <i class="fas fa-arrow-up"></i>

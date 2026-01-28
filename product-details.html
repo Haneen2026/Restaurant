@@ -512,6 +512,26 @@
         <span id="toastMessage"></span>
     </div>
 
+    <!-- Empty Cart UI -->
+    <div class="empty-cart-ui" id="emptyCartUI">
+        <div class="empty-cart-card">
+            <div class="empty-cart-icon">
+                <i class="fas fa-shopping-cart"></i>
+            </div>
+            <h2 class="empty-cart-title">Your cart is empty</h2>
+            <p class="empty-cart-subtitle">Looks like you haven't added any delicious items yet. Browse our menu and add something tasty!</p>
+            <div class="empty-cart-actions">
+                <button class="empty-cart-btn" onclick="goToMenuFromEmptyCart()">
+                    <i class="fas fa-utensils"></i>
+                    Browse Menu
+                </button>
+                <button class="empty-cart-close" onclick="hideEmptyCartUI()">
+                    Close
+                </button>
+            </div>
+        </div>
+    </div>
+
     <!-- Scripts -->
     <script src="content.js"></script>
     <script src="large_menu_data.js"></script>
@@ -824,9 +844,8 @@
             const totalItems = cart.reduce((sum, item) => sum + item.quantity, 0);
             cartCount.textContent = totalItems;
             
-            if (cart.length === 0) {
-                cartItems.innerHTML = '<p class="empty-cart">Your cart is empty</p>';
-            } else {
+            // Only show items if cart has content - empty cart message will show on click only
+            if (cart.length > 0) {
                 cartItems.innerHTML = cart.map(item => `
                     <div class="cart-item">
                         <div class="cart-item-info">
@@ -841,6 +860,9 @@
                         </div>
                     </div>
                 `).join('');
+            } else {
+                // Leave cart items empty when cart is empty - message will show on click only
+                cartItems.innerHTML = '';
             }
             
             const total = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
@@ -855,7 +877,32 @@
         }
 
         function toggleCartDropdown() {
-            document.getElementById('cartDropdown').classList.toggle('active');
+            const dropdown = document.getElementById('cartDropdown');
+            
+            // Check if cart is empty when user clicks
+            if (cart.length === 0) {
+                // Show empty cart glassmorphism UI
+                showEmptyCartUI();
+                return;
+            }
+            
+            // If cart has items, toggle the dropdown normally
+            dropdown.classList.toggle('active');
+        }
+
+        function showEmptyCartUI() {
+            const emptyCartUI = document.getElementById('emptyCartUI');
+            emptyCartUI.classList.add('show');
+        }
+
+        function hideEmptyCartUI() {
+            const emptyCartUI = document.getElementById('emptyCartUI');
+            emptyCartUI.classList.remove('show');
+        }
+
+        function goToMenuFromEmptyCart() {
+            hideEmptyCartUI();
+            window.location.href = 'index.html#menu';
         }
 
         function closeCartDropdown() {
