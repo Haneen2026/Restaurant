@@ -118,6 +118,22 @@ class RestaurantSystem {
                     this.hideEmptyCartUI();
                 });
             }
+
+            // Cart summary UI button event listeners
+            const cartSummaryCloseBtn = document.querySelector('.cart-summary-close');
+            const cartSummaryCheckoutBtn = document.querySelector('.cart-summary-checkout-btn');
+            
+            if (cartSummaryCloseBtn) {
+                cartSummaryCloseBtn.addEventListener('click', () => {
+                    this.hideCartSummaryUI();
+                });
+            }
+            
+            if (cartSummaryCheckoutBtn) {
+                cartSummaryCheckoutBtn.addEventListener('click', () => {
+                    this.goToCheckoutFromSummary();
+                });
+            }
         }, 100);
     }
 
@@ -702,8 +718,18 @@ class RestaurantSystem {
 
     // Cart Management
     addToCart(productId, quantity = 1) {
-        const product = restaurantData.products.find(p => p.id === productId);
-        if (!product) return;
+        // Try to find product in both data sources
+        let product = restaurantData.products.find(p => p.id === productId);
+        if (!product && largeRestaurantMenu) {
+            product = largeRestaurantMenu.products.find(p => p.id === productId);
+        }
+        
+        if (!product) {
+            console.log('Product not found with ID:', productId);
+            return;
+        }
+
+        console.log('Adding to cart:', product.name, 'Price:', product.price, 'Quantity:', quantity);
 
         const existingItem = this.cart.find(item => item.id === productId);
         
@@ -773,8 +799,6 @@ class RestaurantSystem {
     }
 
     toggleCartDropdown() {
-        const dropdown = document.getElementById('cartDropdown');
-        
         // Check if cart is empty when user clicks
         if (this.cart.length === 0) {
             // Show empty cart glassmorphism UI
@@ -782,8 +806,110 @@ class RestaurantSystem {
             return;
         }
         
-        // If cart has items, toggle the dropdown normally
-        dropdown.classList.toggle('active');
+        // If cart has items, show cart summary UI
+        this.showCartSummaryUI();
+    }
+
+    showCartSummaryUI() {
+        const cartSummaryUI = document.getElementById('cartSummaryUI');
+        
+        // Debug: Log cart data with type checking
+        console.log('Cart data:', this.cart);
+        console.log('Cart length:', this.cart.length);
+        
+        // Calculate cart totals with proper number parsing
+        const subtotal = this.cart.reduce((sum, item) => {
+            const price = parseFloat(item.price) || 0;
+            const quantity = parseInt(item.quantity) || 0;
+            const itemTotal = price * quantity;
+            console.log(`Item: ${item.name}, Price: ${price}, Quantity: ${quantity}, Item Total: ${itemTotal}`);
+            return sum + itemTotal;
+        }, 0);
+        
+        const fees = subtotal * 0.2; // 20% fees
+        const deliveryFee = 2.5; // Fixed delivery fee
+        const total = subtotal + fees + deliveryFee;
+        
+        // Debug: Log calculations
+        console.log('Calculated values:', {
+            subtotal: subtotal,
+            fees: fees,
+            deliveryFee: deliveryFee,
+            total: total
+        });
+        
+        // Update UI elements
+        document.getElementById('cartSubtotal').textContent = formatPrice(subtotal);
+        document.getElementById('cartFees').textContent = formatPrice(fees);
+        document.getElementById('cartDelivery').textContent = formatPrice(deliveryFee);
+        document.getElementById('cartTotal').textContent = formatPrice(total);
+        
+        // Populate cart items
+        const cartItemsList = document.getElementById('cartItemsList');
+        if (this.cart.length > 0) {
+            cartItemsList.innerHTML = this.cart.map(item => {
+                const productImage = item.image || item.image_url || 'https://via.placeholder.com/60x60?text=No+Image';
+                const price = parseFloat(item.price) || 0;
+                const quantity = parseInt(item.quantity) || 0;
+                const itemTotal = price * quantity;
+                
+                return `
+                    <div class="cart-item-summary">
+                        <img src="${productImage}" alt="${item.name}" class="cart-item-image">
+                        <div class="cart-item-info-summary">
+                            <div class="cart-item-name-summary">${item.name}</div>
+                            <div class="cart-item-price-summary">${formatPrice(price)}</div>
+                            <div class="cart-item-controls">
+                                <div class="quantity-controls">
+                                    <button class="quantity-btn" onclick="restaurantSystem.updateCartItemQuantity(${item.id}, -1)" ${quantity <= 1 ? 'disabled' : ''}>
+                                        −
+                                    </button>
+                                    <span class="quantity-value">${quantity}</span>
+                                    <button class="quantity-btn" onclick="restaurantSystem.updateCartItemQuantity(${item.id}, 1)">
+                                        +
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="cart-item-total-summary">${formatPrice(itemTotal)}</div>
+                    </div>
+                `;
+            }).join('');
+        } else {
+            cartItemsList.innerHTML = '<p style="text-align: center; color: #5a6c7d; padding: 1rem;">No items in cart</p>';
+        }
+        
+        // Show the cart summary UI
+        cartSummaryUI.classList.add('show');
+    }
+
+    hideCartSummaryUI() {
+        const cartSummaryUI = document.getElementById('cartSummaryUI');
+        cartSummaryUI.classList.remove('show');
+    }
+
+    goToCheckoutFromSummary() {
+        this.hideCartSummaryUI();
+        this.navigateToPage('checkout');
+    }
+
+    updateCartItemQuantity(productId, change) {
+        const item = this.cart.find(item => item.id === productId);
+        if (item) {
+            const newQuantity = item.quantity + change;
+            if (newQuantity >= 1) {
+                item.quantity = newQuantity;
+                this.saveCart();
+                this.updateCartUI();
+                // Refresh the cart summary UI to show updated quantities and totals
+                this.showCartSummaryUI();
+            } else if (newQuantity === 0) {
+                // Remove item if quantity becomes 0
+                this.removeFromCart(productId);
+                // Refresh the cart summary UI
+                this.showCartSummaryUI();
+            }
+        }
     }
 
     showEmptyCartUI() {
@@ -1155,12 +1281,15 @@ class RestaurantSystem {
 
     // Local Storage
     saveCart() {
+        console.log('Saving cart to localStorage:', this.cart);
         localStorage.setItem('restaurantCart', JSON.stringify(this.cart));
     }
 
     loadCart() {
         const savedCart = localStorage.getItem('restaurantCart');
-        return savedCart ? JSON.parse(savedCart) : [];
+        const cart = savedCart ? JSON.parse(savedCart) : [];
+        console.log('Loading cart from localStorage:', cart);
+        return cart;
     }
 }
 
@@ -1177,9 +1306,22 @@ document.addEventListener('DOMContentLoaded', () => {
             categories: restaurantData.categories.length,
             products: restaurantData.products.length
         });
+        
+        // Log some sample products to check their structure
+        console.log('Sample products:', restaurantData.products.slice(0, 3));
+    }
+    
+    // Check if large menu data is available
+    if (typeof largeRestaurantMenu !== 'undefined') {
+        console.log('Large menu data available:', {
+            categories: largeRestaurantMenu.categories.length,
+            products: largeRestaurantMenu.products.length
+        });
+        console.log('Sample large menu products:', largeRestaurantMenu.products.slice(0, 3));
     }
     
     restaurantSystem = new RestaurantSystem();
+    console.log('Restaurant system initialized');
 });
 
 // Global Policy Functions
@@ -1206,5 +1348,37 @@ function goToMenuFromEmptyCart() {
 function hideEmptyCartUI() {
     if (restaurantSystem) {
         restaurantSystem.hideEmptyCartUI();
+    }
+}
+
+// Global functions for cart summary UI buttons
+function hideCartSummaryUI() {
+    if (restaurantSystem) {
+        restaurantSystem.hideCartSummaryUI();
+    }
+}
+
+function goToCheckoutFromSummary() {
+    if (restaurantSystem) {
+        restaurantSystem.goToCheckoutFromSummary();
+    }
+}
+
+// Debug function to test cart functionality
+function testAddToCart() {
+    if (restaurantSystem) {
+        console.log('Testing add to cart...');
+        // Try to add the first available product
+        if (restaurantData.products.length > 0) {
+            const testProduct = restaurantData.products[0];
+            console.log('Adding test product:', testProduct);
+            restaurantSystem.addToCart(testProduct.id, 1);
+        } else if (largeRestaurantMenu && largeRestaurantMenu.products.length > 0) {
+            const testProduct = largeRestaurantMenu.products[0];
+            console.log('Adding test product from large menu:', testProduct);
+            restaurantSystem.addToCart(testProduct.id, 1);
+        } else {
+            console.log('No products available for testing');
+        }
     }
 }

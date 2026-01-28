@@ -496,6 +496,59 @@
         </div>
     </div>
 
+    <!-- Cart Summary UI -->
+    <div class="cart-summary-ui" id="cartSummaryUI">
+        <div class="cart-summary-card">
+            <div class="cart-summary-header">
+                <div class="cart-summary-icon">
+                    <i class="fas fa-shopping-cart"></i>
+                </div>
+                <h2 class="cart-summary-title">Cart Summary</h2>
+                <button class="cart-summary-close" onclick="hideCartSummaryUI()">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            
+            <div class="cart-summary-items">
+                <!-- Cart Items Section -->
+                <div class="cart-items-section" id="cartItemsSection">
+                    <h3 class="cart-items-title">Items in Cart</h3>
+                    <div class="cart-items-list" id="cartItemsList">
+                        <!-- Items will be dynamically inserted here -->
+                    </div>
+                </div>
+                
+                <div class="cart-summary-divider"></div>
+                
+                <!-- Price Breakdown Section -->
+                <div class="cart-summary-item">
+                    <span class="cart-summary-label">Subtotal</span>
+                    <span class="cart-summary-value" id="cartSubtotal">$0.00</span>
+                </div>
+                <div class="cart-summary-item">
+                    <span class="cart-summary-label">Fees (20%)</span>
+                    <span class="cart-summary-value" id="cartFees">$0.00</span>
+                </div>
+                <div class="cart-summary-item">
+                    <span class="cart-summary-label">Delivery Fee</span>
+                    <span class="cart-summary-value" id="cartDelivery">$2.50</span>
+                </div>
+                <div class="cart-summary-divider"></div>
+                <div class="cart-summary-item cart-summary-total">
+                    <span class="cart-summary-label">Total</span>
+                    <span class="cart-summary-value" id="cartTotal">$0.00</span>
+                </div>
+            </div>
+            
+            <div class="cart-summary-actions">
+                <button class="cart-summary-checkout-btn" onclick="goToCheckoutFromSummary()">
+                    <i class="fas fa-credit-card"></i>
+                    Proceed to Checkout
+                </button>
+            </div>
+        </div>
+    </div>
+
         <!-- Scroll to Top Button -->
         <button class="scroll-to-top" id="scrollToTopBtn">
             <i class="fas fa-arrow-up"></i>
