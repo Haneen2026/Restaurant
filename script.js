@@ -101,6 +101,24 @@ class RestaurantSystem {
                 this.closeCartDropdown();
             }
         });
+
+        // Empty cart UI button event listeners
+        setTimeout(() => {
+            const browseMenuBtn = document.querySelector('.empty-cart-btn');
+            const closeBtn = document.querySelector('.empty-cart-close');
+            
+            if (browseMenuBtn) {
+                browseMenuBtn.addEventListener('click', () => {
+                    this.goToMenuFromEmptyCart();
+                });
+            }
+            
+            if (closeBtn) {
+                closeBtn.addEventListener('click', () => {
+                    this.hideEmptyCartUI();
+                });
+            }
+        }, 100);
     }
 
     // Navigation
@@ -1174,5 +1192,19 @@ function showPolicy(type) {
 function closePolicyModal() {
     if (restaurantSystem) {
         restaurantSystem.closePolicyModal();
+    }
+}
+
+// Global functions for empty cart UI buttons
+function goToMenuFromEmptyCart() {
+    if (restaurantSystem) {
+        restaurantSystem.hideEmptyCartUI();
+        restaurantSystem.navigateToPage('menu');
+    }
+}
+
+function hideEmptyCartUI() {
+    if (restaurantSystem) {
+        restaurantSystem.hideEmptyCartUI();
     }
 }
