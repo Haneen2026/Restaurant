@@ -768,34 +768,52 @@ class RestaurantSystem {
         const cartItems = document.getElementById('cartItems');
         const cartTotal = document.getElementById('cartTotal');
 
+        // Debug: Log cart state
+        console.log('updateCartUI called with cart:', this.cart);
+
         // Update cart count
         const totalItems = this.cart.reduce((sum, item) => sum + item.quantity, 0);
         cartCount.textContent = totalItems;
 
         // Update cart items - only show items if cart has content
         if (this.cart.length > 0) {
-            cartItems.innerHTML = this.cart.map(item => `
-                <div class="cart-item">
-                    <div class="cart-item-info">
-                        <div class="cart-item-name">${item.name}</div>
-                        <div class="cart-item-quantity">Quantity: ${item.quantity}</div>
+            cartItems.innerHTML = this.cart.map(item => {
+                const itemPrice = parseFloat(item.price) || 0;
+                const itemQuantity = parseInt(item.quantity) || 0;
+                const itemTotal = itemPrice * itemQuantity;
+                console.log(`Cart UI - Item: ${item.name}, Price: ${itemPrice}, Quantity: ${itemQuantity}, Total: ${itemTotal}`);
+                
+                return `
+                    <div class="cart-item">
+                        <div class="cart-item-info">
+                            <div class="cart-item-name">${item.name}</div>
+                            <div class="cart-item-quantity">Quantity: ${item.quantity}</div>
+                        </div>
+                        <div class="cart-item-actions">
+                            <span class="cart-item-price">${formatPrice(itemTotal)}</span>
+                            <button class="remove-item-btn" onclick="restaurantSystem.removeFromCart(${item.id})">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </div>
                     </div>
-                    <div class="cart-item-actions">
-                        <span class="cart-item-price">${formatPrice(item.price * item.quantity)}</span>
-                        <button class="remove-item-btn" onclick="restaurantSystem.removeFromCart(${item.id})">
-                            <i class="fas fa-trash"></i>
-                        </button>
-                    </div>
-                </div>
-            `).join('');
+                `;
+            }).join('');
         } else {
             // Leave cart items empty when cart is empty - message will show on click only
             cartItems.innerHTML = '';
         }
 
-        // Update cart total
-        const total = this.cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
-        cartTotal.textContent = formatPrice(total);
+        // Update cart total with proper number parsing
+        const total = this.cart.reduce((sum, item) => {
+            const price = parseFloat(item.price) || 0;
+            const quantity = parseInt(item.quantity) || 0;
+            return sum + (price * quantity);
+        }, 0);
+        
+        console.log('Cart total calculated:', total);
+        if (cartTotal) {
+            cartTotal.textContent = formatPrice(total);
+        }
     }
 
     toggleCartDropdown() {
@@ -842,7 +860,11 @@ class RestaurantSystem {
         document.getElementById('cartSubtotal').textContent = formatPrice(subtotal);
         document.getElementById('cartFees').textContent = formatPrice(fees);
         document.getElementById('cartDelivery').textContent = formatPrice(deliveryFee);
-        document.getElementById('cartTotal').textContent = formatPrice(total);
+        // Use querySelector to get the cart total within the cart summary UI
+        const cartSummaryTotal = cartSummaryUI.querySelector('#cartTotal');
+        if (cartSummaryTotal) {
+            cartSummaryTotal.textContent = formatPrice(total);
+        }
         
         // Populate cart items
         const cartItemsList = document.getElementById('cartItemsList');
@@ -941,8 +963,9 @@ class RestaurantSystem {
 
         const container = document.getElementById('checkoutOrderSummary');
         const subtotal = this.cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
-        const tax = subtotal * 0.1; // 10% tax
-        const total = subtotal + tax;
+        const fees = subtotal * 0.2; // 20% fees
+        const deliveryFee = 2.5; // Fixed delivery fee
+        const total = subtotal + fees + deliveryFee;
 
         container.innerHTML = `
             ${this.cart.map(item => `
@@ -959,8 +982,12 @@ class RestaurantSystem {
                 <div>${formatPrice(subtotal)}</div>
             </div>
             <div class="order-item">
-                <div><strong>Tax (10%)</strong></div>
-                <div>${formatPrice(tax)}</div>
+                <div><strong>Fees (20%)</strong></div>
+                <div>${formatPrice(fees)}</div>
+            </div>
+            <div class="order-item">
+                <div><strong>Delivery Fee</strong></div>
+                <div>${formatPrice(deliveryFee)}</div>
             </div>
             <div class="order-item">
                 <div><strong>Total</strong></div>
@@ -983,8 +1010,9 @@ class RestaurantSystem {
 
         // Calculate order totals
         const subtotal = this.cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
-        const tax = subtotal * 0.1;
-        const total = subtotal + tax;
+        const fees = subtotal * 0.2; // 20% fees
+        const deliveryFee = 2.5; // Fixed delivery fee
+        const total = subtotal + fees + deliveryFee;
 
         // Create order object
         const order = {
@@ -999,7 +1027,8 @@ class RestaurantSystem {
                 total: item.price * item.quantity
             })),
             subtotal: subtotal,
-            tax: tax,
+            fees: fees,
+            deliveryFee: deliveryFee,
             total: total,
             orderDate: new Date().toISOString(),
             status: 'Pending'
@@ -1280,6 +1309,51 @@ class RestaurantSystem {
     }
 
     // Local Storage
+    // Test function to add a sample item to cart
+    addTestItemToCart() {
+        console.log('=== Adding Test Item to Cart ===');
+        
+        // Find a sample product from the menu data
+        let sampleProduct = restaurantData.products && restaurantData.products.length > 0 
+            ? restaurantData.products[0] 
+            : { id: 999, name: 'Test Product', price: 15.99, description: 'Test description' };
+        
+        console.log('Adding sample product:', sampleProduct);
+        this.addToCart(sampleProduct.id, 1);
+    }
+
+    // Test function to verify cart calculation
+    testCartCalculation() {
+        console.log('=== Testing Cart Calculation ===');
+        
+        // Test with sample data
+        const testCart = [
+            { id: 1, name: 'Test Item 1', price: '10.99', quantity: 2 },
+            { id: 2, name: 'Test Item 2', price: 5.50, quantity: 1 }
+        ];
+        
+        const testSubtotal = testCart.reduce((sum, item) => {
+            const price = parseFloat(item.price) || 0;
+            const quantity = parseInt(item.quantity) || 0;
+            return sum + (price * quantity);
+        }, 0);
+        
+        const testFees = testSubtotal * 0.2;
+        const testDelivery = 2.5;
+        const testTotal = testSubtotal + testFees + testDelivery;
+        
+        console.log('Test cart:', testCart);
+        console.log('Test subtotal:', testSubtotal);
+        console.log('Test fees:', testFees);
+        console.log('Test delivery:', testDelivery);
+        console.log('Test total:', testTotal);
+        
+        // Test formatPrice function
+        console.log('Formatted total:', formatPrice(testTotal));
+        
+        return testTotal;
+    }
+
     saveCart() {
         console.log('Saving cart to localStorage:', this.cart);
         localStorage.setItem('restaurantCart', JSON.stringify(this.cart));
@@ -1322,6 +1396,17 @@ document.addEventListener('DOMContentLoaded', () => {
     
     restaurantSystem = new RestaurantSystem();
     console.log('Restaurant system initialized');
+    
+    // Test cart calculation
+    setTimeout(() => {
+        restaurantSystem.testCartCalculation();
+        console.log('Current cart state:', restaurantSystem.cart);
+        restaurantSystem.addTestItemToCart();
+        setTimeout(() => {
+            console.log('Cart after adding test item:', restaurantSystem.cart);
+            restaurantSystem.updateCartUI();
+        }, 500);
+    }, 1000);
 });
 
 // Global Policy Functions
