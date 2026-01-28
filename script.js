@@ -1470,3 +1470,429 @@ function testAddToCart() {
         }
     }
 }
+
+// Product Details Page JavaScript
+let currentProduct = null;
+let currentQuantity = 1;
+let cart = [];
+
+// Initialize the page
+document.addEventListener('DOMContentLoaded', function() {
+    loadCartFromStorage();
+    setupEventListeners();
+    loadProductFromURL();
+    setupDarkMode();
+});
+
+// Setup event listeners
+function setupEventListeners() {
+    // Cart functionality
+    document.getElementById('cartBtn').addEventListener('click', toggleCartDropdown);
+    document.getElementById('closeCart').addEventListener('click', closeCartDropdown);
+    document.getElementById('checkoutBtn').addEventListener('click', goToCheckout);
+    
+    // Close cart dropdown when clicking outside
+    document.addEventListener('click', function(e) {
+        const cartDropdown = document.getElementById('cartDropdown');
+        const cartBtn = document.getElementById('cartBtn');
+        
+        if (!cartDropdown.contains(e.target) && e.target !== cartBtn) {
+            closeCartDropdown();
+        }
+    });
+
+    // Mobile menu toggle
+    document.getElementById('mobileMenuToggle').addEventListener('click', function() {
+        document.querySelector('.nav-list').classList.toggle('active');
+    });
+
+    // Dark mode toggle
+    document.getElementById('darkModeToggle').addEventListener('click', toggleDarkMode);
+
+    // Order now button
+    document.getElementById('orderNowBtn').addEventListener('click', function() {
+        window.location.href = 'index.html#menu';
+    });
+}
+
+// Load product from URL query string
+function loadProductFromURL() {
+    const urlParams = new URLSearchParams(window.location.search);
+    const productId = urlParams.get('id');
+    
+    if (!productId) {
+        showError();
+        return;
+    }
+
+    // Try to find product in restaurantData first
+    let product = null;
+    
+    // Check if restaurantData is available
+    if (typeof restaurantData !== 'undefined' && restaurantData.products) {
+        product = restaurantData.products.find(p => p.id == productId);
+    }
+    
+    // If not found, check largeRestaurantMenu
+    if (!product && typeof largeRestaurantMenu !== 'undefined' && largeRestaurantMenu.products) {
+        product = largeRestaurantMenu.products.find(p => p.id == productId);
+    }
+
+    if (product) {
+        displayProduct(product);
+    } else {
+        showError();
+    }
+}
+
+// Display product details
+function displayProduct(product) {
+    currentProduct = product;
+    
+    // Update page title
+    document.title = `${product.name} - Delicious Bites Restaurant`;
+    
+    // Update product information
+    document.getElementById('productImage').src = product.image || product.image_url;
+    document.getElementById('productImage').alt = product.name;
+    document.getElementById('productTitle').textContent = product.name;
+    document.getElementById('productPrice').textContent = formatPrice(product.price);
+    document.getElementById('productDescription').textContent = product.description;
+    
+    // Update rating
+    updateRating(product.rating || 4.5);
+    
+    // Update ingredients
+    updateIngredients(product);
+    
+    // Update badges
+    updateBadges(product);
+    
+    // Load related products
+    loadRelatedProducts(product);
+    
+    // Show content, hide loading
+    document.getElementById('loadingState').style.display = 'none';
+    document.getElementById('productContent').style.display = 'block';
+    
+    // Reset quantity
+    currentQuantity = 1;
+    document.getElementById('quantityDisplay').textContent = currentQuantity;
+}
+
+// Update rating display
+function updateRating(rating) {
+    const starsContainer = document.getElementById('productStars');
+    const ratingText = document.getElementById('productRating');
+    
+    starsContainer.innerHTML = '';
+    const fullStars = Math.floor(rating);
+    const hasHalfStar = rating % 1 !== 0;
+    
+    for (let i = 0; i < fullStars; i++) {
+        starsContainer.innerHTML += '<i class="fas fa-star star"></i>';
+    }
+    
+    if (hasHalfStar) {
+        starsContainer.innerHTML += '<i class="fas fa-star-half-alt star"></i>';
+    }
+    
+    const emptyStars = 5 - Math.ceil(rating);
+    for (let i = 0; i < emptyStars; i++) {
+        starsContainer.innerHTML += '<i class="far fa-star star"></i>';
+    }
+    
+    ratingText.textContent = `${rating} (${Math.floor(Math.random() * 100) + 50} reviews)`;
+}
+
+// Update ingredients display
+function updateIngredients(product) {
+    const ingredientsContainer = document.getElementById('productIngredients');
+    
+    if (product.ingredients) {
+        ingredientsContainer.textContent = product.ingredients;
+    } else {
+        // Generate default ingredients based on product name and category
+        const defaultIngredients = generateDefaultIngredients(product);
+        ingredientsContainer.textContent = defaultIngredients;
+    }
+}
+
+// Generate default ingredients based on product
+function generateDefaultIngredients(product) {
+    const baseIngredients = {
+        'meat': ['Premium meat', 'Spices', 'Herbs', 'Vegetables', 'Sauce'],
+        'chicken': ['Fresh chicken', 'Marinade', 'Spices', 'Herbs', 'Vegetables'],
+        'fish': ['Fresh fish', 'Lemon', 'Herbs', 'Olive oil', 'Seasonings'],
+        'vegetarian': ['Fresh vegetables', 'Herbs', 'Spices', 'Olive oil', 'Seasonings'],
+        'pasta': ['Pasta', 'Tomato sauce', 'Cheese', 'Herbs', 'Olive oil'],
+        'dessert': ['Sugar', 'Flour', 'Butter', 'Eggs', 'Flavorings'],
+        'beverage': ['Natural ingredients', 'Water', 'Natural sweeteners', 'Flavorings']
+    };
+    
+    const productName = product.name.toLowerCase();
+    let ingredients = baseIngredients.vegetarian; // default
+    
+    if (productName.includes('beef') || productName.includes('steak') || productName.includes('meat')) {
+        ingredients = baseIngredients.meat;
+    } else if (productName.includes('chicken') || productName.includes('poultry')) {
+        ingredients = baseIngredients.chicken;
+    } else if (productName.includes('fish') || productName.includes('salmon') || productName.includes('seafood')) {
+        ingredients = baseIngredients.fish;
+    } else if (productName.includes('pasta') || productName.includes('spaghetti') || productName.includes('lasagna')) {
+        ingredients = baseIngredients.pasta;
+    } else if (productName.includes('cake') || productName.includes('dessert') || productName.includes('ice cream')) {
+        ingredients = baseIngredients.dessert;
+    } else if (productName.includes('juice') || productName.includes('coffee') || productName.includes('tea')) {
+        ingredients = baseIngredients.beverage;
+    }
+    
+    return ingredients.join(', ');
+}
+
+// Update product badges
+function updateBadges(product) {
+    const badgesContainer = document.getElementById('productBadges');
+    badgesContainer.innerHTML = '';
+    
+    if (product.isVegetarian) {
+        badgesContainer.innerHTML += '<span class="badge vegetarian">🥬 Vegetarian</span>';
+    }
+    
+    if (product.isPopular) {
+        badgesContainer.innerHTML += '<span class="badge popular">⭐ Popular</span>';
+    }
+}
+
+// Load related products
+function loadRelatedProducts(currentProduct) {
+    const relatedGrid = document.getElementById('relatedProductsGrid');
+    let allProducts = [];
+    
+    // Get all products from available data sources
+    if (typeof restaurantData !== 'undefined' && restaurantData.products) {
+        allProducts = allProducts.concat(restaurantData.products);
+    }
+    
+    if (typeof largeRestaurantMenu !== 'undefined' && largeRestaurantMenu.products) {
+        allProducts = allProducts.concat(largeRestaurantMenu.products);
+    }
+    
+    // Find related products (same category or similar)
+    const relatedProducts = allProducts
+        .filter(p => p.id !== currentProduct.id && 
+                   (p.categoryId === currentProduct.categoryId || 
+                    p.name.toLowerCase().includes(currentProduct.name.toLowerCase().split(' ')[0])))
+        .slice(0, 4);
+    
+    if (relatedProducts.length > 0) {
+        relatedGrid.innerHTML = relatedProducts.map(product => `
+            <div class="product-card ${product.isPopular ? 'popular' : ''} ${product.isVegetarian ? 'vegetarian' : ''}" 
+                 onclick="goToProductDetail(${product.id})">
+                <img src="${product.image || product.image_url}" alt="${product.name}" class="product-image">
+                <div class="product-info">
+                    <h3 class="product-name">${product.name}</h3>
+                    <p class="product-description">${truncateText(product.description, 80)}</p>
+                    <div class="product-price">${formatPrice(product.price)}</div>
+                    <button class="add-to-cart-btn" onclick="event.stopPropagation(); quickAddToCart(${product.id})">
+                        Add to Cart
+                    </button>
+                </div>
+            </div>
+        `).join('');
+    } else {
+        relatedGrid.innerHTML = '<p style="grid-column: 1/-1; text-align: center; color: var(--text-light);">No related products found.</p>';
+    }
+}
+
+// Navigate to product detail page
+function goToProductDetail(productId) {
+    window.location.href = `product-details.html?id=${productId}`;
+}
+
+// Quick add to cart from related products
+function quickAddToCart(productId) {
+    let product = null;
+    
+    if (typeof restaurantData !== 'undefined' && restaurantData.products) {
+        product = restaurantData.products.find(p => p.id === productId);
+    }
+    
+    if (!product && typeof largeRestaurantMenu !== 'undefined' && largeRestaurantMenu.products) {
+        product = largeRestaurantMenu.products.find(p => p.id === productId);
+    }
+    
+    if (product) {
+        addToCartWithProduct(product, 1);
+    }
+}
+
+// Update quantity
+function updateQuantity(change) {
+    currentQuantity = Math.max(1, currentQuantity + change);
+    document.getElementById('quantityDisplay').textContent = currentQuantity;
+}
+
+// Add to cart
+function addToCart() {
+    if (currentProduct) {
+        addToCartWithProduct(currentProduct, currentQuantity);
+    }
+}
+
+// Add product to cart
+function addToCartWithProduct(product, quantity) {
+    const existingItem = cart.find(item => item.id === product.id);
+    
+    if (existingItem) {
+        existingItem.quantity += quantity;
+    } else {
+        cart.push({
+            ...product,
+            quantity: quantity
+        });
+    }
+    
+    saveCartToStorage();
+    updateCartUI();
+    showToast(`${product.name} added to cart!`);
+}
+
+// Cart management functions
+function loadCartFromStorage() {
+    const savedCart = localStorage.getItem('restaurantCart');
+    if (savedCart) {
+        cart = JSON.parse(savedCart);
+        updateCartUI();
+    }
+}
+
+function saveCartToStorage() {
+    localStorage.setItem('restaurantCart', JSON.stringify(cart));
+}
+
+function updateCartUI() {
+    const cartCount = document.getElementById('cartCount');
+    const cartItems = document.getElementById('cartItems');
+    const cartTotal = document.getElementById('cartTotal');
+    
+    const totalItems = cart.reduce((sum, item) => sum + item.quantity, 0);
+    cartCount.textContent = totalItems;
+    
+    // Only show items if cart has content - empty cart message will show on click only
+    if (cart.length > 0) {
+        cartItems.innerHTML = cart.map(item => `
+            <div class="cart-item">
+                <div class="cart-item-info">
+                    <div class="cart-item-name">${item.name}</div>
+                    <div class="cart-item-quantity">Quantity: ${item.quantity}</div>
+                </div>
+                <div class="cart-item-actions">
+                    <span class="cart-item-price">${formatPrice(item.price * item.quantity)}</span>
+                    <button class="remove-item-btn" onclick="removeFromCart(${item.id})">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                </div>
+            </div>
+        `).join('');
+    } else {
+        // Leave cart items empty when cart is empty - message will show on click only
+        cartItems.innerHTML = '';
+    }
+    
+    const total = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+    cartTotal.textContent = formatPrice(total);
+}
+
+function removeFromCart(productId) {
+    cart = cart.filter(item => item.id !== productId);
+    saveCartToStorage();
+    updateCartUI();
+    showToast('Item removed from cart');
+}
+
+function toggleCartDropdown() {
+    const dropdown = document.getElementById('cartDropdown');
+    
+    // Check if cart is empty when user clicks
+    if (cart.length === 0) {
+        // Show empty cart glassmorphism UI
+        showEmptyCartUI();
+        return;
+    }
+    
+    // If cart has items, toggle the dropdown normally
+    dropdown.classList.toggle('active');
+}
+
+function showEmptyCartUI() {
+    const emptyCartUI = document.getElementById('emptyCartUI');
+    emptyCartUI.classList.add('show');
+}
+
+function hideEmptyCartUI() {
+    const emptyCartUI = document.getElementById('emptyCartUI');
+    emptyCartUI.classList.remove('show');
+}
+
+function goToMenuFromEmptyCart() {
+    hideEmptyCartUI();
+    window.location.href = 'index.html#menu';
+}
+
+function closeCartDropdown() {
+    document.getElementById('cartDropdown').classList.remove('active');
+}
+
+function goToCheckout() {
+    if (cart.length === 0) {
+        showToast('Your cart is empty!', 'warning');
+        return;
+    }
+    window.location.href = 'index.html#checkout';
+}
+
+// Utility functions
+function formatPrice(price) {
+    return `$${price.toFixed(2)}`;
+}
+
+function truncateText(text, maxLength) {
+    return text.length > maxLength ? text.substring(0, maxLength) + '...' : text;
+}
+
+function showToast(message, type = 'success') {
+    const toast = document.getElementById('toast');
+    const toastMessage = document.getElementById('toastMessage');
+    
+    toastMessage.textContent = message;
+    toast.className = `toast ${type}`;
+    toast.style.display = 'block';
+    
+    setTimeout(() => {
+        toast.style.display = 'none';
+    }, 3000);
+}
+
+function showError() {
+    document.getElementById('loadingState').style.display = 'none';
+    document.getElementById('errorState').style.display = 'block';
+}
+
+// Dark mode functions
+function setupDarkMode() {
+    const savedDarkMode = localStorage.getItem('darkMode') === 'true';
+    if (savedDarkMode) {
+        document.body.classList.add('dark-mode');
+        document.getElementById('darkModeToggle').innerHTML = '<i class="fas fa-sun"></i>';
+    }
+}
+
+function toggleDarkMode() {
+    document.body.classList.toggle('dark-mode');
+    const isDarkMode = document.body.classList.contains('dark-mode');
+    localStorage.setItem('darkMode', isDarkMode);
+    
+    const darkModeToggle = document.getElementById('darkModeToggle');
+    darkModeToggle.innerHTML = isDarkMode ? '<i class="fas fa-sun"></i>' : '<i class="fas fa-moon"></i>';
+}

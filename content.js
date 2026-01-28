@@ -302,7 +302,7 @@ function loadDefaultMenuData() {
 }
 
 // Initialize with default data
-// loadDefaultMenuData(); // Commented out - will be called from script.js
+loadDefaultMenuData();
 
 // Ensure restaurantData is available globally
 if (typeof restaurantData === 'undefined') {
