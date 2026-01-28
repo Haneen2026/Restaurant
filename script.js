@@ -883,7 +883,7 @@ class RestaurantSystem {
                             <div class="cart-item-price-summary">${formatPrice(price)}</div>
                             <div class="cart-item-controls">
                                 <div class="quantity-controls">
-                                    <button class="quantity-btn" onclick="restaurantSystem.updateCartItemQuantity(${item.id}, -1)" ${quantity <= 1 ? 'disabled' : ''}>
+                                    <button class="quantity-btn" onclick="restaurantSystem.updateCartItemQuantity(${item.id}, -1)">
                                         −
                                     </button>
                                     <span class="quantity-value">${quantity}</span>
@@ -926,10 +926,13 @@ class RestaurantSystem {
                 // Refresh the cart summary UI to show updated quantities and totals
                 this.showCartSummaryUI();
             } else if (newQuantity === 0) {
-                // Remove item if quantity becomes 0
-                this.removeFromCart(productId);
-                // Refresh the cart summary UI
-                this.showCartSummaryUI();
+                // Show confirmation dialog before removing item
+                const confirmed = confirm('Remove this item from the cart?');
+                if (confirmed) {
+                    this.removeFromCart(productId);
+                    // Refresh the cart summary UI
+                    this.showCartSummaryUI();
+                }
             }
         }
     }
