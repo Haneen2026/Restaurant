@@ -474,6 +474,7 @@ body.dark-mode .footer-bottom {
 /* Main Content */
 .main {
     min-height: calc(100vh - 80px);
+    padding-top: 100px; /* Add space for fixed header */
 }
 
 .page {
@@ -483,14 +484,17 @@ body.dark-mode .footer-bottom {
 
 .page.active {
     display: block;
+    padding-top: 2rem; /* Ensure consistent spacing for active pages */
 }
 
 /* Hero Section */
 .hero {
     background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
     color: var(--white);
-    padding: 5rem 0;
+    padding: 7rem 0; /* Increased padding to account for header */
     text-align: center;
+    margin-top: -100px; /* Offset the main padding for hero section */
+    padding-top: 8rem; /* Extra top padding for hero */
 }
 
 .hero-content h1 {
