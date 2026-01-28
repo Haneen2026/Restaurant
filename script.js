@@ -667,40 +667,8 @@ class RestaurantSystem {
 
     // Product Details
     showProductDetails(productId) {
-        const product = restaurantData.products.find(p => p.id === productId);
-        if (!product) return;
-
-        this.currentProduct = product;
-        this.navigateToPage('productDetails');
-
-        const container = document.getElementById('productDetails');
-        container.innerHTML = `
-            <div class="product-details">
-                <div>
-                    <img src="${product.image}" alt="${product.name}" class="product-detail-image">
-                </div>
-                <div class="product-detail-info">
-                    <h1>${product.name}</h1>
-                    <div class="product-detail-price">${formatPrice(product.price)}</div>
-                    <div class="product-rating">
-                        ${this.renderStars(product.rating)}
-                        <span>${product.rating}</span>
-                    </div>
-                    <p class="product-detail-description">${product.description}</p>
-                    <div class="quantity-selector">
-                        <button class="quantity-btn" onclick="restaurantSystem.updateQuantity(${product.id}, -1)">-</button>
-                        <span class="quantity-display" id="quantity-${product.id}">1</span>
-                        <button class="quantity-btn" onclick="restaurantSystem.updateQuantity(${product.id}, 1)">+</button>
-                    </div>
-                    <button class="add-to-cart-detail-btn" onclick="restaurantSystem.addToCart(${product.id})">
-                        Add to Cart
-                    </button>
-                </div>
-            </div>
-        `;
-
-        // Load related products
-        this.loadRelatedProducts(product.id, product.categoryId);
+        // Navigate to product details page with product ID as query parameter
+        window.location.href = `product-details.html?id=${productId}`;
     }
 
     loadRelatedProducts(productId, categoryId) {
@@ -944,10 +912,11 @@ class RestaurantSystem {
         const isVegetarian = product.isVegetarian || false;
         const popularClass = isPopular ? 'popular' : '';
         const vegetarianClass = isVegetarian ? 'vegetarian' : '';
+        const productImage = product.image || product.image_url || 'https://via.placeholder.com/300x200?text=No+Image';
         
         return `
             <div class="product-card ${popularClass} ${vegetarianClass}" onclick="restaurantSystem.showProductDetails(${product.id})">
-                <img src="${product.image}" alt="${product.name}" class="product-image">
+                <img src="${productImage}" alt="${product.name}" class="product-image">
                 <div class="product-info">
                     <h3 class="product-name">${product.name}</h3>
                     <p class="product-description">${truncateText(product.description, 50)}</p>
