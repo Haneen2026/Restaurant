@@ -316,6 +316,94 @@ if (restaurantData && restaurantData.products.length === 0) {
     loadDefaultMenuData();
 }
 
+// CREATIVE SOLUTION: Force render featured and popular sections immediately
+function forceRenderHomeSections() {
+    console.log('Force rendering home sections...');
+    
+    // Wait for DOM to be ready
+    function tryRender() {
+        const featuredContainer = document.getElementById('featuredProducts');
+        const popularContainer = document.getElementById('popularProducts');
+        
+        if (featuredContainer && popularContainer && restaurantData.products.length > 0) {
+            console.log('Containers found, rendering products...');
+            
+            // Render featured products (first 4)
+            const featuredProducts = restaurantData.products.slice(0, 4);
+            featuredContainer.innerHTML = featuredProducts.map(product => createSimpleProductCard(product)).join('');
+            
+            // Render popular products (first 6 popular items)
+            const popularProducts = restaurantData.products.filter(p => p.isPopular).slice(0, 6);
+            popularContainer.innerHTML = popularProducts.map(product => createSimpleProductCard(product)).join('');
+            
+            console.log('Home sections rendered successfully!');
+            return true;
+        }
+        return false;
+    }
+    
+    // Try immediately
+    if (tryRender()) return;
+    
+    // Try after DOM is ready
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', tryRender);
+    } else {
+        setTimeout(tryRender, 100);
+    }
+    
+    // Keep trying as backup
+    let attempts = 0;
+    const retryInterval = setInterval(() => {
+        attempts++;
+        if (tryRender() || attempts > 20) {
+            clearInterval(retryInterval);
+        }
+    }, 200);
+}
+
+// Simple product card creator (doesn't need RestaurantSystem class)
+function createSimpleProductCard(product) {
+    return `
+        <div class="product-card" onclick="window.location.href='product-details.html?id=${product.id}'">
+            <img src="${product.image_url}" alt="${product.name}" class="product-image" onerror="this.src='https://via.placeholder.com/300x200?text=${encodeURIComponent(product.name)}'">
+            <div class="product-info">
+                <h3 class="product-name">${product.name}</h3>
+                <p class="product-description">${product.description}</p>
+                <div class="product-rating">
+                    ${generateStars(product.rating)}
+                    <span>${product.rating}</span>
+                </div>
+                <div class="product-price">$${product.price.toFixed(2)}</div>
+                <button class="add-to-cart-btn" onclick="event.stopPropagation(); if(window.restaurantSystem) window.restaurantSystem.addToCart(${product.id}); else console.log('Cart system not ready')">
+                    Add to Cart
+                </button>
+            </div>
+        </div>
+    `;
+}
+
+function generateStars(rating) {
+    const fullStars = Math.floor(rating);
+    const halfStar = rating % 1 >= 0.5 ? 1 : 0;
+    const emptyStars = 5 - fullStars - halfStar;
+    
+    let stars = '';
+    for (let i = 0; i < fullStars; i++) {
+        stars += '<i class="fas fa-star"></i>';
+    }
+    if (halfStar) {
+        stars += '<i class="fas fa-star-half-alt"></i>';
+    }
+    for (let i = 0; i < emptyStars; i++) {
+        stars += '<i class="far fa-star"></i>';
+    }
+    return stars;
+}
+
+// Force render immediately
+forceRenderHomeSections();
+
 function truncateText(text, maxLength) {
     return text.length > maxLength ? text.substring(0, maxLength) + '...' : text;
 }

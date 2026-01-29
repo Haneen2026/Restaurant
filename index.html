@@ -360,12 +360,66 @@
                         <div class="contact-item">
                             <i class="fas fa-phone"></i>
                             <span>+1 (555) 123-4567</span>
+                        </div>
                         <div class="contact-item">
                             <i class="fas fa-envelope"></i>
                             <span>info@deliciousbites.com</span>
+                        </div>
                         <div class="contact-item">
                             <i class="fas fa-map-marker-alt"></i>
                             <span>123 Main Street, City, State 12345</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Checkout Page -->
+        <section class="page" id="checkoutPage">
+            <div class="container">
+                <h1>Checkout</h1>
+                <div class="checkout-content">
+                    <div class="checkout-form">
+                        <form id="checkoutForm">
+                            <div class="form-group">
+                                <label for="customerName">Full Name</label>
+                                <input type="text" id="customerName" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="customerPhone">Phone Number</label>
+                                <input type="tel" id="customerPhone" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="customerAddress">Delivery Address</label>
+                                <textarea id="customerAddress" required></textarea>
+                            </div>
+                            <button type="button" id="placeOrderBtn" class="place-order-btn">Place Order</button>
+                        </form>
+                    </div>
+                    <div class="checkout-summary">
+                        <h2>Order Summary</h2>
+                        <div id="checkoutOrderSummary">
+                            <!-- Order items will be loaded here -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Order Confirmation Page -->
+        <section class="page" id="confirmationPage">
+            <div class="container">
+                <div class="confirmation-content">
+                    <div class="success-icon">
+                        <i class="fas fa-check-circle"></i>
+                    </div>
+                    <h1>Order Confirmed!</h1>
+                    <p>Thank you for your order. Your order number is:</p>
+                    <div class="order-number" id="orderNumber"></div>
+                    <p>We'll send you updates on your order status.</p>
+                    <button id="continueShoppingBtn" class="continue-shopping-btn">Continue Shopping</button>
+                </div>
+            </div>
         </section>
 
     </main>
@@ -514,7 +568,6 @@
         </button>
 
     <script src="content.js"></script>
-    <script src="large_menu_data.js"></script>
     <script src="script.js"></script>
 </body>
 </html>

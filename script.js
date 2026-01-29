@@ -2,6 +2,7 @@
 // Restaurant System JavaScript
 class RestaurantSystem {
     constructor() {
+        console.log('RestaurantSystem constructor called');
         this.cart = this.loadCart();
         this.currentPage = 'home';
         this.currentCategory = 'all';
@@ -17,16 +18,21 @@ class RestaurantSystem {
             search: ''
         };
         
+        console.log('RestaurantSystem properties initialized, calling init()...');
         this.init();
     }
 
     init() {
+        console.log('RestaurantSystem init() called');
         this.setupEventListeners();
+        console.log('Event listeners setup, calling loadHomePage()...');
         this.loadHomePage();
+        console.log('Home page loaded, updating cart UI...');
         this.updateCartUI();
         this.setupDarkMode();
         this.setupScrollToTop();
         this.setupStickyHeader();
+        console.log('RestaurantSystem init() completed');
     }
 
     // Event Listeners
@@ -78,19 +84,28 @@ class RestaurantSystem {
         });
 
         // Product details back button
-        document.getElementById('backToMenu').addEventListener('click', () => {
-            this.navigateToPage('menu');
-        });
+        const backToMenu = document.getElementById('backToMenu');
+        if (backToMenu) {
+            backToMenu.addEventListener('click', () => {
+                this.navigateToPage('menu');
+            });
+        }
 
         // Checkout form
-        document.getElementById('placeOrderBtn').addEventListener('click', () => {
-            this.placeOrder();
-        });
+        const placeOrderBtn = document.getElementById('placeOrderBtn');
+        if (placeOrderBtn) {
+            placeOrderBtn.addEventListener('click', () => {
+                this.placeOrder();
+            });
+        }
 
         // Continue shopping button
-        document.getElementById('continueShoppingBtn').addEventListener('click', () => {
-            this.navigateToPage('home');
-        });
+        const continueShoppingBtn = document.getElementById('continueShoppingBtn');
+        if (continueShoppingBtn) {
+            continueShoppingBtn.addEventListener('click', () => {
+                this.navigateToPage('home');
+            });
+        }
 
         // Close cart dropdown when clicking outside
         document.addEventListener('click', (e) => {
@@ -190,8 +205,22 @@ class RestaurantSystem {
     }
 
     loadFeaturedProducts() {
+        console.log('Loading featured products...');
         const container = document.getElementById('featuredProducts');
+        
+        if (!container) {
+            console.error('Featured products container not found!');
+            return;
+        }
+        
+        if (!restaurantData || !restaurantData.products || restaurantData.products.length === 0) {
+            console.error('No restaurant data available for featured products!');
+            container.innerHTML = '<p>No products available</p>';
+            return;
+        }
+        
         const featuredProducts = restaurantData.products.slice(0, 4);
+        console.log('Found featured products:', featuredProducts.length);
         
         container.innerHTML = featuredProducts.map(product => 
             this.createProductCard(product)
@@ -199,11 +228,26 @@ class RestaurantSystem {
 
         // Add event listeners to product cards
         this.attachProductCardListeners(container);
+        console.log('Featured products loaded successfully');
     }
 
     loadPopularProducts() {
+        console.log('Loading popular products...');
         const container = document.getElementById('popularProducts');
+        
+        if (!container) {
+            console.error('Popular products container not found!');
+            return;
+        }
+        
+        if (!restaurantData || !restaurantData.products || restaurantData.products.length === 0) {
+            console.error('No restaurant data available for popular products!');
+            container.innerHTML = '<p>No products available</p>';
+            return;
+        }
+        
         const popularProducts = getPopularProducts().slice(0, 6);
+        console.log('Found popular products:', popularProducts.length);
         
         container.innerHTML = popularProducts.map(product => 
             this.createProductCard(product)
@@ -211,6 +255,7 @@ class RestaurantSystem {
 
         // Add event listeners to product cards
         this.attachProductCardListeners(container);
+        console.log('Popular products loaded successfully');
     }
 
     // Menu Page
@@ -1854,11 +1899,29 @@ function goToCheckout() {
 
 // Utility functions
 function formatPrice(price) {
-    return `$${price.toFixed(2)}`;
+    return `$${parseFloat(price).toFixed(2)}`;
 }
 
 function truncateText(text, maxLength) {
     return text.length > maxLength ? text.substring(0, maxLength) + '...' : text;
+}
+
+// Helper functions for menu data
+function getProductsByCategory(categoryId) {
+    if (!categoryId) {
+        return restaurantData.products || [];
+    }
+    return (restaurantData.products || []).filter(product => product.categoryId === categoryId);
+}
+
+function getPopularProducts() {
+    return (restaurantData.products || []).filter(product => product.isPopular);
+}
+
+function getRelatedProducts(productId, categoryId) {
+    return (restaurantData.products || []).filter(product => 
+        product.id !== productId && product.categoryId === categoryId
+    ).slice(0, 4);
 }
 
 function showToast(message, type = 'success') {
@@ -1896,3 +1959,68 @@ function toggleDarkMode() {
     const darkModeToggle = document.getElementById('darkModeToggle');
     darkModeToggle.innerHTML = isDarkMode ? '<i class="fas fa-sun"></i>' : '<i class="fas fa-moon"></i>';
 }
+
+// Simple and direct initialization
+function initializeRestaurant() {
+    console.log('Initializing restaurant system...');
+    
+    // Check if data is available
+    if (typeof restaurantData === 'undefined' || !restaurantData.products || restaurantData.products.length === 0) {
+        console.error('Restaurant data not available');
+        return;
+    }
+    
+    // Create the restaurant system
+    if (!window.restaurantSystem) {
+        console.log('Creating new RestaurantSystem instance...');
+        window.restaurantSystem = new RestaurantSystem();
+        console.log('RestaurantSystem created successfully');
+    } else {
+        console.log('RestaurantSystem already exists');
+    }
+}
+
+// Try multiple initialization approaches
+function tryInitialization() {
+    console.log('Attempting initialization...');
+    
+    // Direct attempt
+    initializeRestaurant();
+    
+    // If that didn't work, try after a short delay
+    setTimeout(() => {
+        if (!window.restaurantSystem) {
+            console.log('Retrying initialization after delay...');
+            initializeRestaurant();
+        }
+    }, 100);
+    
+    // Final retry after longer delay
+    setTimeout(() => {
+        if (!window.restaurantSystem) {
+            console.log('Final retry initialization...');
+            initializeRestaurant();
+        }
+    }, 500);
+}
+
+// Initialize when DOM is ready
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', tryInitialization);
+} else {
+    // DOM is already ready
+    tryInitialization();
+}
+
+// Also try on window load as backup
+window.addEventListener('load', function() {
+    console.log('Window load event fired');
+    if (!window.restaurantSystem) {
+        console.log('Initializing on window load...');
+        tryInitialization();
+    }
+});
+
+// Immediate failsafe - try to initialize right now
+console.log('Script loaded, attempting immediate initialization...');
+tryInitialization();
