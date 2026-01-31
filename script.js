@@ -1357,51 +1357,6 @@ class RestaurantSystem {
     }
 
     // Local Storage
-    // Test function to add a sample item to cart
-    addTestItemToCart() {
-        console.log('=== Adding Test Item to Cart ===');
-        
-        // Find a sample product from the menu data
-        let sampleProduct = restaurantData.products && restaurantData.products.length > 0 
-            ? restaurantData.products[0] 
-            : { id: 999, name: 'Test Product', price: 15.99, description: 'Test description' };
-        
-        console.log('Adding sample product:', sampleProduct);
-        this.addToCart(sampleProduct.id, 1);
-    }
-
-    // Test function to verify cart calculation
-    testCartCalculation() {
-        console.log('=== Testing Cart Calculation ===');
-        
-        // Test with sample data
-        const testCart = [
-            { id: 1, name: 'Test Item 1', price: '10.99', quantity: 2 },
-            { id: 2, name: 'Test Item 2', price: 5.50, quantity: 1 }
-        ];
-        
-        const testSubtotal = testCart.reduce((sum, item) => {
-            const price = parseFloat(item.price) || 0;
-            const quantity = parseInt(item.quantity) || 0;
-            return sum + (price * quantity);
-        }, 0);
-        
-        const testFees = testSubtotal * 0.2;
-        const testDelivery = 2.5;
-        const testTotal = testSubtotal + testFees + testDelivery;
-        
-        console.log('Test cart:', testCart);
-        console.log('Test subtotal:', testSubtotal);
-        console.log('Test fees:', testFees);
-        console.log('Test delivery:', testDelivery);
-        console.log('Test total:', testTotal);
-        
-        // Test formatPrice function
-        console.log('Formatted total:', formatPrice(testTotal));
-        
-        return testTotal;
-    }
-
     saveCart() {
         console.log('Saving cart to localStorage:', this.cart);
         localStorage.setItem('restaurantCart', JSON.stringify(this.cart));
@@ -1444,17 +1399,6 @@ document.addEventListener('DOMContentLoaded', () => {
     
     restaurantSystem = new RestaurantSystem();
     console.log('Restaurant system initialized');
-    
-    // Test cart calculation
-    setTimeout(() => {
-        restaurantSystem.testCartCalculation();
-        console.log('Current cart state:', restaurantSystem.cart);
-        restaurantSystem.addTestItemToCart();
-        setTimeout(() => {
-            console.log('Cart after adding test item:', restaurantSystem.cart);
-            restaurantSystem.updateCartUI();
-        }, 500);
-    }, 1000);
 });
 
 // Global Policy Functions
@@ -1494,25 +1438,6 @@ function hideCartSummaryUI() {
 function goToCheckoutFromSummary() {
     if (restaurantSystem) {
         restaurantSystem.goToCheckoutFromSummary();
-    }
-}
-
-// Debug function to test cart functionality
-function testAddToCart() {
-    if (restaurantSystem) {
-        console.log('Testing add to cart...');
-        // Try to add the first available product
-        if (restaurantData.products.length > 0) {
-            const testProduct = restaurantData.products[0];
-            console.log('Adding test product:', testProduct);
-            restaurantSystem.addToCart(testProduct.id, 1);
-        } else if (largeRestaurantMenu && largeRestaurantMenu.products.length > 0) {
-            const testProduct = largeRestaurantMenu.products[0];
-            console.log('Adding test product from large menu:', testProduct);
-            restaurantSystem.addToCart(testProduct.id, 1);
-        } else {
-            console.log('No products available for testing');
-        }
     }
 }
 
