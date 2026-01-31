@@ -741,7 +741,7 @@ class RestaurantSystem {
                         <span>${product.rating}</span>
                     </div>
                     <div class="product-price">${formatPrice(product.price)}</div>
-                    <button class="add-to-cart-btn" onclick="if(shoppingCart) shoppingCart.addItem({id: '${product.id}', name: '${product.name.replace(/'/g, "\\'")}', price: ${product.price}, image: '${productImage}'}, 1); event.stopPropagation();">
+                    <button class="add-to-cart-btn" onclick="(function(btn){if(shoppingCart) shoppingCart.addItem({id: '${product.id}', name: '${product.name.replace(/'/g, "\\'")}', price: ${product.price}, image: '${productImage}'}, 1); btn.classList.add('clicked'); setTimeout(() => btn.classList.remove('clicked'), 600);})(this); event.stopPropagation();">
                         <i class="fas fa-shopping-cart"></i> Add to Cart
                     </button>
                 </div>
@@ -1248,13 +1248,25 @@ function showToast(message, type = 'success') {
     const toast = document.getElementById('toast');
     const toastMessage = document.getElementById('toastMessage');
     
-    toastMessage.textContent = message;
-    toast.className = `toast ${type}`;
-    toast.style.display = 'block';
+    // Remove any existing animation classes
+    toast.classList.remove('show');
     
+    // Wait a moment to ensure the show class is removed
     setTimeout(() => {
-        toast.style.display = 'none';
-    }, 3000);
+        toastMessage.textContent = message;
+        toast.className = `toast ${type}`;
+        
+        // Trigger reflow to restart animation
+        void toast.offsetWidth;
+        
+        // Add show class to trigger animation
+        toast.classList.add('show');
+        
+        // Hide after 4 seconds
+        setTimeout(() => {
+            toast.classList.remove('show');
+        }, 4000);
+    }, 10);
 }
 
 function showError() {
