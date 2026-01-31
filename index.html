@@ -30,9 +30,8 @@
                     <button class="dark-mode-toggle" id="darkModeToggle" aria-label="Toggle dark mode" tabindex="0">
                         <i class="fas fa-moon"></i>
                     </button>
-                    <button class="cart-btn" id="cartBtn" aria-label="Shopping cart" tabindex="0">
+                    <button class="cart-btn" id="cartBtn" aria-label="Shopping cart (decorative)" tabindex="0" disabled>
                         <i class="fas fa-shopping-cart"></i>
-                        <span class="cart-count" id="cartCount" aria-label="Cart item count">0</span>
                     </button>
                     <button class="order-now-btn" id="orderNowBtn" aria-label="Order now" tabindex="0">Order Now</button>
                 </div>
@@ -44,23 +43,7 @@
         </div>
     </header>
 
-    <!-- Cart Dropdown -->
-    <div class="cart-dropdown" id="cartDropdown">
-        <div class="cart-header">
-            <h3>Your Cart</h3>
-            <button class="close-cart" id="closeCart">&times;</button>
-        </div>
-        <div class="cart-items" id="cartItems">
-            <p class="empty-cart">Your cart is empty</p>
-        </div>
-        <div class="cart-footer">
-            <div class="cart-total">
-                <span>Total: <span id="cartTotal">$0.00</span></span>
-            </div>
-            <button class="checkout-btn" id="checkoutBtn">Checkout</button>
-        </div>
-    </div>
-
+    
     <!-- Main Content -->
     <main class="main">
         <!-- Home Page -->
@@ -374,54 +357,8 @@
             </div>
         </section>
 
-        <!-- Checkout Page -->
-        <section class="page" id="checkoutPage">
-            <div class="container">
-                <h1>Checkout</h1>
-                <div class="checkout-content">
-                    <div class="checkout-form">
-                        <form id="checkoutForm">
-                            <div class="form-group">
-                                <label for="customerName">Full Name</label>
-                                <input type="text" id="customerName" required>
-                            </div>
-                            <div class="form-group">
-                                <label for="customerPhone">Phone Number</label>
-                                <input type="tel" id="customerPhone" required>
-                            </div>
-                            <div class="form-group">
-                                <label for="customerAddress">Delivery Address</label>
-                                <textarea id="customerAddress" required></textarea>
-                            </div>
-                            <button type="button" id="placeOrderBtn" class="place-order-btn">Place Order</button>
-                        </form>
-                    </div>
-                    <div class="checkout-summary">
-                        <h2>Order Summary</h2>
-                        <div id="checkoutOrderSummary">
-                            <!-- Order items will be loaded here -->
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </section>
-
-        <!-- Order Confirmation Page -->
-        <section class="page" id="confirmationPage">
-            <div class="container">
-                <div class="confirmation-content">
-                    <div class="success-icon">
-                        <i class="fas fa-check-circle"></i>
-                    </div>
-                    <h1>Order Confirmed!</h1>
-                    <p>Thank you for your order. Your order number is:</p>
-                    <div class="order-number" id="orderNumber"></div>
-                    <p>We'll send you updates on your order status.</p>
-                    <button id="continueShoppingBtn" class="continue-shopping-btn">Continue Shopping</button>
-                </div>
-            </div>
-        </section>
-
+        
+        
     </main>
 
     <!-- Footer -->
@@ -489,79 +426,8 @@
         <span id="toastMessage"></span>
     </div>
 
-    <!-- Empty Cart UI -->
-    <div class="empty-cart-ui" id="emptyCartUI">
-        <div class="empty-cart-card">
-            <div class="empty-cart-icon">
-                <i class="fas fa-shopping-cart"></i>
-            </div>
-            <h2 class="empty-cart-title">Your cart is empty</h2>
-            <p class="empty-cart-subtitle">Looks like you haven't added any delicious items yet. Browse our menu and add something tasty!</p>
-            <div class="empty-cart-actions">
-                <button class="empty-cart-btn" onclick="goToMenuFromEmptyCart()">
-                    <i class="fas fa-utensils"></i>
-                    Browse Menu
-                </button>
-                <button class="empty-cart-close" onclick="hideEmptyCartUI()">
-                    Close
-                </button>
-            </div>
-        </div>
-    </div>
-
-    <!-- Cart Summary UI -->
-    <div class="cart-summary-ui" id="cartSummaryUI">
-        <div class="cart-summary-card">
-            <div class="cart-summary-header">
-                <div class="cart-summary-icon">
-                    <i class="fas fa-shopping-cart"></i>
-                </div>
-                <h2 class="cart-summary-title">Cart Summary</h2>
-                <button class="cart-summary-close" onclick="hideCartSummaryUI()">
-                    <i class="fas fa-times"></i>
-                </button>
-            </div>
-            
-            <div class="cart-summary-items">
-                <!-- Cart Items Section -->
-                <div class="cart-items-section" id="cartItemsSection">
-                    <h3 class="cart-items-title">Items in Cart</h3>
-                    <div class="cart-items-list" id="cartItemsList">
-                        <!-- Items will be dynamically inserted here -->
-                    </div>
-                </div>
-                
-                <div class="cart-summary-divider"></div>
-                
-                <!-- Price Breakdown Section -->
-                <div class="cart-summary-item">
-                    <span class="cart-summary-label">Subtotal</span>
-                    <span class="cart-summary-value" id="cartSubtotal">$0.00</span>
-                </div>
-                <div class="cart-summary-item">
-                    <span class="cart-summary-label">Fees (20%)</span>
-                    <span class="cart-summary-value" id="cartFees">$0.00</span>
-                </div>
-                <div class="cart-summary-item">
-                    <span class="cart-summary-label">Delivery Fee</span>
-                    <span class="cart-summary-value" id="cartDelivery">$2.50</span>
-                </div>
-                <div class="cart-summary-divider"></div>
-                <div class="cart-summary-item cart-summary-total">
-                    <span class="cart-summary-label">Total</span>
-                    <span class="cart-summary-value" id="cartTotal">$0.00</span>
-                </div>
-            </div>
-            
-            <div class="cart-summary-actions">
-                <button class="cart-summary-checkout-btn" onclick="goToCheckoutFromSummary()">
-                    <i class="fas fa-credit-card"></i>
-                    Proceed to Checkout
-                </button>
-            </div>
-        </div>
-    </div>
-
+    
+    
         <!-- Scroll to Top Button -->
         <button class="scroll-to-top" id="scrollToTopBtn">
             <i class="fas fa-arrow-up"></i>

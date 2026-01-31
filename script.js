@@ -3,7 +3,6 @@
 class RestaurantSystem {
     constructor() {
         console.log('RestaurantSystem constructor called');
-        this.cart = this.loadCart();
         this.currentPage = 'home';
         this.currentCategory = 'all';
         this.currentProduct = null;
@@ -27,8 +26,7 @@ class RestaurantSystem {
         this.setupEventListeners();
         console.log('Event listeners setup, calling loadHomePage()...');
         this.loadHomePage();
-        console.log('Home page loaded, updating cart UI...');
-        this.updateCartUI();
+        console.log('Home page loaded');
         this.setupDarkMode();
         this.setupScrollToTop();
         this.setupStickyHeader();
@@ -64,18 +62,9 @@ class RestaurantSystem {
             this.navigateToPage('menu');
         });
 
-        // Cart functionality
+        // Cart functionality - disabled
         document.getElementById('cartBtn').addEventListener('click', () => {
-            this.toggleCartDropdown();
-        });
-
-        document.getElementById('closeCart').addEventListener('click', () => {
-            this.closeCartDropdown();
-        });
-
-        document.getElementById('checkoutBtn').addEventListener('click', () => {
-            this.navigateToPage('checkout');
-            this.closeCartDropdown();
+            // Cart functionality removed
         });
 
         // Dark mode toggle
@@ -91,65 +80,11 @@ class RestaurantSystem {
             });
         }
 
-        // Checkout form
-        const placeOrderBtn = document.getElementById('placeOrderBtn');
-        if (placeOrderBtn) {
-            placeOrderBtn.addEventListener('click', () => {
-                this.placeOrder();
-            });
-        }
+        // Checkout form - removed
 
-        // Continue shopping button
-        const continueShoppingBtn = document.getElementById('continueShoppingBtn');
-        if (continueShoppingBtn) {
-            continueShoppingBtn.addEventListener('click', () => {
-                this.navigateToPage('home');
-            });
-        }
+        // Close dropdown when clicking outside - removed for cart
 
-        // Close cart dropdown when clicking outside
-        document.addEventListener('click', (e) => {
-            const cartDropdown = document.getElementById('cartDropdown');
-            const cartBtn = document.getElementById('cartBtn');
-            
-            if (!cartDropdown.contains(e.target) && e.target !== cartBtn) {
-                this.closeCartDropdown();
-            }
-        });
-
-        // Empty cart UI button event listeners
-        setTimeout(() => {
-            const browseMenuBtn = document.querySelector('.empty-cart-btn');
-            const closeBtn = document.querySelector('.empty-cart-close');
-            
-            if (browseMenuBtn) {
-                browseMenuBtn.addEventListener('click', () => {
-                    this.goToMenuFromEmptyCart();
-                });
-            }
-            
-            if (closeBtn) {
-                closeBtn.addEventListener('click', () => {
-                    this.hideEmptyCartUI();
-                });
-            }
-
-            // Cart summary UI button event listeners
-            const cartSummaryCloseBtn = document.querySelector('.cart-summary-close');
-            const cartSummaryCheckoutBtn = document.querySelector('.cart-summary-checkout-btn');
-            
-            if (cartSummaryCloseBtn) {
-                cartSummaryCloseBtn.addEventListener('click', () => {
-                    this.hideCartSummaryUI();
-                });
-            }
-            
-            if (cartSummaryCheckoutBtn) {
-                cartSummaryCheckoutBtn.addEventListener('click', () => {
-                    this.goToCheckoutFromSummary();
-                });
-            }
-        }, 100);
+        // Cart UI event listeners - removed
     }
 
     // Navigation
@@ -188,9 +123,6 @@ class RestaurantSystem {
                 break;
             case 'contact':
                 // Contact page content is static
-                break;
-            case 'checkout':
-                this.loadCheckoutPage();
                 break;
         }
 
@@ -761,368 +693,6 @@ class RestaurantSystem {
         this.attachProductCardListeners(container);
     }
 
-    // Cart Management
-    addToCart(productId, quantity = 1) {
-        // Try to find product in both data sources
-        let product = restaurantData.products.find(p => p.id === productId);
-        if (!product && largeRestaurantMenu) {
-            product = largeRestaurantMenu.products.find(p => p.id === productId);
-        }
-        
-        if (!product) {
-            console.log('Product not found with ID:', productId);
-            return;
-        }
-
-        console.log('Adding to cart:', product.name, 'Price:', product.price, 'Quantity:', quantity);
-
-        const existingItem = this.cart.find(item => item.id === productId);
-        
-        if (existingItem) {
-            existingItem.quantity += quantity;
-        } else {
-            this.cart.push({
-                ...product,
-                quantity: quantity
-            });
-        }
-
-        this.saveCart();
-        this.updateCartUI();
-        this.showToast(`${product.name} added to cart!`);
-    }
-
-    removeFromCart(productId) {
-        this.cart = this.cart.filter(item => item.id !== productId);
-        this.saveCart();
-        this.updateCartUI();
-        this.showToast('Item removed from cart');
-    }
-
-    updateQuantity(productId, change) {
-        const quantityDisplay = document.getElementById(`quantity-${productId}`);
-        if (quantityDisplay) {
-            let currentQuantity = parseInt(quantityDisplay.textContent);
-            currentQuantity = Math.max(1, currentQuantity + change);
-            quantityDisplay.textContent = currentQuantity;
-        }
-    }
-
-    updateCartUI() {
-        const cartCount = document.getElementById('cartCount');
-        const cartItems = document.getElementById('cartItems');
-        const cartTotal = document.getElementById('cartTotal');
-
-        // Debug: Log cart state
-        console.log('updateCartUI called with cart:', this.cart);
-
-        // Update cart count
-        const totalItems = this.cart.reduce((sum, item) => sum + item.quantity, 0);
-        cartCount.textContent = totalItems;
-
-        // Update cart items - only show items if cart has content
-        if (this.cart.length > 0) {
-            cartItems.innerHTML = this.cart.map(item => {
-                const itemPrice = parseFloat(item.price) || 0;
-                const itemQuantity = parseInt(item.quantity) || 0;
-                const itemTotal = itemPrice * itemQuantity;
-                console.log(`Cart UI - Item: ${item.name}, Price: ${itemPrice}, Quantity: ${itemQuantity}, Total: ${itemTotal}`);
-                
-                return `
-                    <div class="cart-item">
-                        <div class="cart-item-info">
-                            <div class="cart-item-name">${item.name}</div>
-                            <div class="cart-item-quantity">Quantity: ${item.quantity}</div>
-                        </div>
-                        <div class="cart-item-actions">
-                            <span class="cart-item-price">${formatPrice(itemTotal)}</span>
-                            <button class="remove-item-btn" onclick="restaurantSystem.removeFromCart(${item.id})">
-                                <i class="fas fa-trash"></i>
-                            </button>
-                        </div>
-                    </div>
-                `;
-            }).join('');
-        } else {
-            // Leave cart items empty when cart is empty - message will show on click only
-            cartItems.innerHTML = '';
-        }
-
-        // Update cart total with proper number parsing
-        const total = this.cart.reduce((sum, item) => {
-            const price = parseFloat(item.price) || 0;
-            const quantity = parseInt(item.quantity) || 0;
-            return sum + (price * quantity);
-        }, 0);
-        
-        console.log('Cart total calculated:', total);
-        if (cartTotal) {
-            cartTotal.textContent = formatPrice(total);
-        }
-    }
-
-    toggleCartDropdown() {
-        // Check if cart is empty when user clicks
-        if (this.cart.length === 0) {
-            // Show empty cart glassmorphism UI
-            this.showEmptyCartUI();
-            return;
-        }
-        
-        // If cart has items, show cart summary UI
-        this.showCartSummaryUI();
-    }
-
-    showCartSummaryUI() {
-        const cartSummaryUI = document.getElementById('cartSummaryUI');
-        
-        // Debug: Log cart data with type checking
-        console.log('Cart data:', this.cart);
-        console.log('Cart length:', this.cart.length);
-        
-        // Calculate cart totals with proper number parsing
-        const subtotal = this.cart.reduce((sum, item) => {
-            const price = parseFloat(item.price) || 0;
-            const quantity = parseInt(item.quantity) || 0;
-            const itemTotal = price * quantity;
-            console.log(`Item: ${item.name}, Price: ${price}, Quantity: ${quantity}, Item Total: ${itemTotal}`);
-            return sum + itemTotal;
-        }, 0);
-        
-        const fees = subtotal * 0.2; // 20% fees
-        const deliveryFee = 2.5; // Fixed delivery fee
-        const total = subtotal + fees + deliveryFee;
-        
-        // Debug: Log calculations
-        console.log('Calculated values:', {
-            subtotal: subtotal,
-            fees: fees,
-            deliveryFee: deliveryFee,
-            total: total
-        });
-        
-        // Update UI elements
-        document.getElementById('cartSubtotal').textContent = formatPrice(subtotal);
-        document.getElementById('cartFees').textContent = formatPrice(fees);
-        document.getElementById('cartDelivery').textContent = formatPrice(deliveryFee);
-        // Use querySelector to get the cart total within the cart summary UI
-        const cartSummaryTotal = cartSummaryUI.querySelector('#cartTotal');
-        if (cartSummaryTotal) {
-            cartSummaryTotal.textContent = formatPrice(total);
-        }
-        
-        // Populate cart items
-        const cartItemsList = document.getElementById('cartItemsList');
-        if (this.cart.length > 0) {
-            cartItemsList.innerHTML = this.cart.map(item => {
-                const productImage = item.image || item.image_url || 'https://via.placeholder.com/60x60?text=No+Image';
-                const price = parseFloat(item.price) || 0;
-                const quantity = parseInt(item.quantity) || 0;
-                const itemTotal = price * quantity;
-                
-                return `
-                    <div class="cart-item-summary">
-                        <img src="${productImage}" alt="${item.name}" class="cart-item-image">
-                        <div class="cart-item-info-summary">
-                            <div class="cart-item-name-summary">${item.name}</div>
-                            <div class="cart-item-price-summary">${formatPrice(price)}</div>
-                            <div class="cart-item-controls">
-                                <div class="quantity-controls">
-                                    <button class="quantity-btn" onclick="restaurantSystem.updateCartItemQuantity(${item.id}, -1)">
-                                        −
-                                    </button>
-                                    <span class="quantity-value">${quantity}</span>
-                                    <button class="quantity-btn" onclick="restaurantSystem.updateCartItemQuantity(${item.id}, 1)">
-                                        +
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="cart-item-total-summary">${formatPrice(itemTotal)}</div>
-                    </div>
-                `;
-            }).join('');
-        } else {
-            cartItemsList.innerHTML = '<p style="text-align: center; color: #5a6c7d; padding: 1rem;">No items in cart</p>';
-        }
-        
-        // Show the cart summary UI
-        cartSummaryUI.classList.add('show');
-    }
-
-    hideCartSummaryUI() {
-        const cartSummaryUI = document.getElementById('cartSummaryUI');
-        cartSummaryUI.classList.remove('show');
-    }
-
-    goToCheckoutFromSummary() {
-        this.hideCartSummaryUI();
-        this.navigateToPage('checkout');
-    }
-
-    updateCartItemQuantity(productId, change) {
-        const item = this.cart.find(item => item.id === productId);
-        if (item) {
-            const newQuantity = item.quantity + change;
-            if (newQuantity >= 1) {
-                item.quantity = newQuantity;
-                this.saveCart();
-                this.updateCartUI();
-                // Refresh the cart summary UI to show updated quantities and totals
-                this.showCartSummaryUI();
-            } else if (newQuantity === 0) {
-                // Show confirmation dialog before removing item
-                const confirmed = confirm('Remove this item from the cart?');
-                if (confirmed) {
-                    this.removeFromCart(productId);
-                    // Refresh the cart summary UI
-                    this.showCartSummaryUI();
-                }
-            }
-        }
-    }
-
-    showEmptyCartUI() {
-        const emptyCartUI = document.getElementById('emptyCartUI');
-        emptyCartUI.classList.add('show');
-    }
-
-    hideEmptyCartUI() {
-        const emptyCartUI = document.getElementById('emptyCartUI');
-        emptyCartUI.classList.remove('show');
-    }
-
-    goToMenuFromEmptyCart() {
-        this.hideEmptyCartUI();
-        this.navigateToPage('menu');
-    }
-
-    closeCartDropdown() {
-        document.getElementById('cartDropdown').classList.remove('active');
-    }
-
-    // Checkout
-    loadCheckoutPage() {
-        if (this.cart.length === 0) {
-            this.showToast('Your cart is empty!', 'warning');
-            this.navigateToPage('menu');
-            return;
-        }
-
-        const container = document.getElementById('checkoutOrderSummary');
-        const subtotal = this.cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
-        const fees = subtotal * 0.2; // 20% fees
-        const deliveryFee = 2.5; // Fixed delivery fee
-        const total = subtotal + fees + deliveryFee;
-
-        container.innerHTML = `
-            ${this.cart.map(item => `
-                <div class="order-item">
-                    <div class="order-item-info">
-                        <div class="order-item-name">${item.name}</div>
-                        <div class="order-item-quantity">Quantity: ${item.quantity}</div>
-                    </div>
-                    <div class="order-item-price">${formatPrice(item.price * item.quantity)}</div>
-                </div>
-            `).join('')}
-            <div class="order-item">
-                <div><strong>Subtotal</strong></div>
-                <div>${formatPrice(subtotal)}</div>
-            </div>
-            <div class="order-item">
-                <div><strong>Fees (20%)</strong></div>
-                <div>${formatPrice(fees)}</div>
-            </div>
-            <div class="order-item">
-                <div><strong>Delivery Fee</strong></div>
-                <div>${formatPrice(deliveryFee)}</div>
-            </div>
-            <div class="order-item">
-                <div><strong>Total</strong></div>
-                <div><strong>${formatPrice(total)}</strong></div>
-            </div>
-        `;
-    }
-
-    async placeOrder() {
-        const form = document.getElementById('checkoutForm');
-        const name = document.getElementById('customerName').value;
-        const phone = document.getElementById('customerPhone').value;
-        const address = document.getElementById('customerAddress').value;
-
-        // Validation
-        if (!name || !phone || !address) {
-            this.showToast('Please fill in all fields', 'error');
-            return;
-        }
-
-        // Calculate order totals
-        const subtotal = this.cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
-        const fees = subtotal * 0.2; // 20% fees
-        const deliveryFee = 2.5; // Fixed delivery fee
-        const total = subtotal + fees + deliveryFee;
-
-        // Create order object
-        const order = {
-            orderNumber: this.generateOrderNumber(),
-            customerName: name,
-            customerPhone: phone,
-            customerAddress: address,
-            items: this.cart.map(item => ({
-                name: item.name,
-                quantity: item.quantity,
-                price: item.price,
-                total: item.price * item.quantity
-            })),
-            subtotal: subtotal,
-            fees: fees,
-            deliveryFee: deliveryFee,
-            total: total,
-            orderDate: new Date().toISOString(),
-            status: 'Pending'
-        };
-
-        try {
-            // Save to Google Sheets (simulated)
-            await this.saveOrderToGoogleSheets(order);
-            
-            // Clear cart
-            this.cart = [];
-            this.saveCart();
-            this.updateCartUI();
-
-            // Show confirmation
-            this.showOrderConfirmation(order.orderNumber);
-            
-            // Reset form
-            form.reset();
-            
-        } catch (error) {
-            this.showToast('Failed to place order. Please try again.', 'error');
-        }
-    }
-
-    async saveOrderToGoogleSheets(order) {
-        // Simulate API call to Google Sheets
-        return new Promise((resolve) => {
-            setTimeout(() => {
-                console.log('Order saved to Google Sheets:', order);
-                // In a real implementation, you would use Google Sheets API here
-                resolve();
-            }, 1000);
-        });
-    }
-
-    showOrderConfirmation(orderNumber) {
-        document.getElementById('orderNumber').textContent = orderNumber;
-        this.navigateToPage('confirmation');
-        this.showToast('Order placed successfully!', 'success');
-    }
-
-    generateOrderNumber() {
-        return 'ORD' + Date.now().toString().slice(-8);
-    }
-
     setupScrollToTop() {
         const scrollBtn = document.getElementById('scrollToTopBtn');
         
@@ -1171,9 +741,6 @@ class RestaurantSystem {
                         <span>${product.rating}</span>
                     </div>
                     <div class="product-price">${formatPrice(product.price)}</div>
-                    <button class="add-to-cart-btn" onclick="event.stopPropagation(); restaurantSystem.addToCart(${product.id})">
-                        Add to Cart
-                    </button>
                 </div>
             </div>
         `;
@@ -1355,19 +922,6 @@ class RestaurantSystem {
         const icon = document.querySelector('#darkModeToggle i');
         icon.className = isDarkMode ? 'fas fa-sun' : 'fas fa-moon';
     }
-
-    // Local Storage
-    saveCart() {
-        console.log('Saving cart to localStorage:', this.cart);
-        localStorage.setItem('restaurantCart', JSON.stringify(this.cart));
-    }
-
-    loadCart() {
-        const savedCart = localStorage.getItem('restaurantCart');
-        const cart = savedCart ? JSON.parse(savedCart) : [];
-        console.log('Loading cart from localStorage:', cart);
-        return cart;
-    }
 }
 
 // Initialize the restaurant system
@@ -1414,41 +968,12 @@ function closePolicyModal() {
     }
 }
 
-// Global functions for empty cart UI buttons
-function goToMenuFromEmptyCart() {
-    if (restaurantSystem) {
-        restaurantSystem.hideEmptyCartUI();
-        restaurantSystem.navigateToPage('menu');
-    }
-}
-
-function hideEmptyCartUI() {
-    if (restaurantSystem) {
-        restaurantSystem.hideEmptyCartUI();
-    }
-}
-
-// Global functions for cart summary UI buttons
-function hideCartSummaryUI() {
-    if (restaurantSystem) {
-        restaurantSystem.hideCartSummaryUI();
-    }
-}
-
-function goToCheckoutFromSummary() {
-    if (restaurantSystem) {
-        restaurantSystem.goToCheckoutFromSummary();
-    }
-}
-
 // Product Details Page JavaScript
 let currentProduct = null;
 let currentQuantity = 1;
-let cart = [];
 
 // Initialize the page
 document.addEventListener('DOMContentLoaded', function() {
-    loadCartFromStorage();
     setupEventListeners();
     loadProductFromURL();
     setupDarkMode();
@@ -1456,20 +981,9 @@ document.addEventListener('DOMContentLoaded', function() {
 
 // Setup event listeners
 function setupEventListeners() {
-    // Cart functionality
-    document.getElementById('cartBtn').addEventListener('click', toggleCartDropdown);
-    document.getElementById('closeCart').addEventListener('click', closeCartDropdown);
-    document.getElementById('checkoutBtn').addEventListener('click', goToCheckout);
+    // Cart functionality - removed
     
-    // Close cart dropdown when clicking outside
-    document.addEventListener('click', function(e) {
-        const cartDropdown = document.getElementById('cartDropdown');
-        const cartBtn = document.getElementById('cartBtn');
-        
-        if (!cartDropdown.contains(e.target) && e.target !== cartBtn) {
-            closeCartDropdown();
-        }
-    });
+    // Close dropdown when clicking outside - removed for cart
 
     // Mobile menu toggle
     document.getElementById('mobileMenuToggle').addEventListener('click', function() {
@@ -1664,9 +1178,6 @@ function loadRelatedProducts(currentProduct) {
                     <h3 class="product-name">${product.name}</h3>
                     <p class="product-description">${truncateText(product.description, 80)}</p>
                     <div class="product-price">${formatPrice(product.price)}</div>
-                    <button class="add-to-cart-btn" onclick="event.stopPropagation(); quickAddToCart(${product.id})">
-                        Add to Cart
-                    </button>
                 </div>
             </div>
         `).join('');
@@ -1680,21 +1191,9 @@ function goToProductDetail(productId) {
     window.location.href = `product-details.html?id=${productId}`;
 }
 
-// Quick add to cart from related products
+// Quick add to cart from related products - removed
 function quickAddToCart(productId) {
-    let product = null;
-    
-    if (typeof restaurantData !== 'undefined' && restaurantData.products) {
-        product = restaurantData.products.find(p => p.id === productId);
-    }
-    
-    if (!product && typeof largeRestaurantMenu !== 'undefined' && largeRestaurantMenu.products) {
-        product = largeRestaurantMenu.products.find(p => p.id === productId);
-    }
-    
-    if (product) {
-        addToCartWithProduct(product, 1);
-    }
+    // Cart functionality removed
 }
 
 // Update quantity
@@ -1703,124 +1202,17 @@ function updateQuantity(change) {
     document.getElementById('quantityDisplay').textContent = currentQuantity;
 }
 
-// Add to cart
+// Add to cart - removed
 function addToCart() {
-    if (currentProduct) {
-        addToCartWithProduct(currentProduct, currentQuantity);
-    }
+    // Cart functionality removed
 }
 
-// Add product to cart
+// Add product to cart - removed
 function addToCartWithProduct(product, quantity) {
-    const existingItem = cart.find(item => item.id === product.id);
-    
-    if (existingItem) {
-        existingItem.quantity += quantity;
-    } else {
-        cart.push({
-            ...product,
-            quantity: quantity
-        });
-    }
-    
-    saveCartToStorage();
-    updateCartUI();
-    showToast(`${product.name} added to cart!`);
+    // Cart functionality removed
 }
 
-// Cart management functions
-function loadCartFromStorage() {
-    const savedCart = localStorage.getItem('restaurantCart');
-    if (savedCart) {
-        cart = JSON.parse(savedCart);
-        updateCartUI();
-    }
-}
-
-function saveCartToStorage() {
-    localStorage.setItem('restaurantCart', JSON.stringify(cart));
-}
-
-function updateCartUI() {
-    const cartCount = document.getElementById('cartCount');
-    const cartItems = document.getElementById('cartItems');
-    const cartTotal = document.getElementById('cartTotal');
-    
-    const totalItems = cart.reduce((sum, item) => sum + item.quantity, 0);
-    cartCount.textContent = totalItems;
-    
-    // Only show items if cart has content - empty cart message will show on click only
-    if (cart.length > 0) {
-        cartItems.innerHTML = cart.map(item => `
-            <div class="cart-item">
-                <div class="cart-item-info">
-                    <div class="cart-item-name">${item.name}</div>
-                    <div class="cart-item-quantity">Quantity: ${item.quantity}</div>
-                </div>
-                <div class="cart-item-actions">
-                    <span class="cart-item-price">${formatPrice(item.price * item.quantity)}</span>
-                    <button class="remove-item-btn" onclick="removeFromCart(${item.id})">
-                        <i class="fas fa-trash"></i>
-                    </button>
-                </div>
-            </div>
-        `).join('');
-    } else {
-        // Leave cart items empty when cart is empty - message will show on click only
-        cartItems.innerHTML = '';
-    }
-    
-    const total = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
-    cartTotal.textContent = formatPrice(total);
-}
-
-function removeFromCart(productId) {
-    cart = cart.filter(item => item.id !== productId);
-    saveCartToStorage();
-    updateCartUI();
-    showToast('Item removed from cart');
-}
-
-function toggleCartDropdown() {
-    const dropdown = document.getElementById('cartDropdown');
-    
-    // Check if cart is empty when user clicks
-    if (cart.length === 0) {
-        // Show empty cart glassmorphism UI
-        showEmptyCartUI();
-        return;
-    }
-    
-    // If cart has items, toggle the dropdown normally
-    dropdown.classList.toggle('active');
-}
-
-function showEmptyCartUI() {
-    const emptyCartUI = document.getElementById('emptyCartUI');
-    emptyCartUI.classList.add('show');
-}
-
-function hideEmptyCartUI() {
-    const emptyCartUI = document.getElementById('emptyCartUI');
-    emptyCartUI.classList.remove('show');
-}
-
-function goToMenuFromEmptyCart() {
-    hideEmptyCartUI();
-    window.location.href = 'index.html#menu';
-}
-
-function closeCartDropdown() {
-    document.getElementById('cartDropdown').classList.remove('active');
-}
-
-function goToCheckout() {
-    if (cart.length === 0) {
-        showToast('Your cart is empty!', 'warning');
-        return;
-    }
-    window.location.href = 'index.html#checkout';
-}
+// Cart management functions - removed
 
 // Utility functions
 function formatPrice(price) {
