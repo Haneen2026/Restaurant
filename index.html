@@ -30,8 +30,9 @@
                     <button class="dark-mode-toggle" id="darkModeToggle" aria-label="Toggle dark mode" tabindex="0">
                         <i class="fas fa-moon"></i>
                     </button>
-                    <button class="cart-btn" id="cartBtn" aria-label="Shopping cart (decorative)" tabindex="0" disabled>
+                    <button class="cart-btn" id="cartBtn" aria-label="Shopping cart" tabindex="0">
                         <i class="fas fa-shopping-cart"></i>
+                        <span class="cart-count" id="cartCount">0</span>
                     </button>
                     <button class="order-now-btn" id="orderNowBtn" aria-label="Order now" tabindex="0">Order Now</button>
                 </div>
@@ -407,6 +408,79 @@
                 <p>&copy; 2026 Delicious Bites Restaurant. All rights reserved. | Made with <i class="fas fa-heart" style="color: #e74c3c;"></i> in Amman, Jordan</p>
             </div>
         </footer>
+
+    <!-- Confirmation Modal -->
+    <div id="confirmationModal" class="confirmation-modal">
+        <div class="confirmation-modal-content">
+            <div class="confirmation-modal-header">
+                <h2>Confirm Removal</h2>
+                <button class="confirmation-modal-close" onclick="closeConfirmationModal()">&times;</button>
+            </div>
+            <div class="confirmation-modal-body">
+                <p id="confirmationMessage">Are you sure you want to remove this item from the cart?</p>
+            </div>
+            <div class="confirmation-modal-footer">
+                <button class="btn-cancel" onclick="closeConfirmationModal()">Keep Item</button>
+                <button class="btn-confirm" onclick="confirmRemoveItem()">Remove Item</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Cart Modal -->
+    <div id="cartModal" class="cart-modal">
+        <div class="cart-modal-content">
+            <div class="cart-modal-header">
+                <h2>Shopping Cart</h2>
+                <button class="cart-modal-close" onclick="closeCartModal()">&times;</button>
+            </div>
+            <div class="cart-modal-body" id="cartModalBody">
+                <!-- Cart items will be loaded here -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Checkout Modal -->
+    <div id="checkoutModal" class="checkout-modal">
+        <div class="checkout-modal-content">
+            <div class="checkout-modal-header">
+                <h2>Checkout</h2>
+                <button class="checkout-modal-close" onclick="closeCheckoutModal()">&times;</button>
+            </div>
+            <div class="checkout-modal-body">
+                <form id="checkoutForm" class="checkout-form">
+                    <div class="form-group">
+                        <label for="customerName">Full Name *</label>
+                        <input type="text" id="customerName" name="name" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="customerEmail">Email *</label>
+                        <input type="email" id="customerEmail" name="email" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="customerPhone">Phone Number *</label>
+                        <input type="tel" id="customerPhone" name="phone" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="customerAddress">Delivery Address *</label>
+                        <textarea id="customerAddress" name="address" rows="3" required></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label for="customerNotes">Special Instructions (Optional)</label>
+                        <textarea id="customerNotes" name="notes" rows="2"></textarea>
+                    </div>
+                    <div class="order-summary">
+                        <h3>Order Summary</h3>
+                        <div id="checkoutSummary"></div>
+                        <div class="order-total">
+                            <span>Total:</span>
+                            <span id="orderTotal">$0.00</span>
+                        </div>
+                    </div>
+                    <button type="submit" class="place-order-btn">Place Order</button>
+                </form>
+            </div>
+        </div>
+    </div>
 
     <!-- Policy Modal -->
     <div id="policyModal" class="policy-modal">

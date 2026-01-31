@@ -731,16 +731,19 @@ class RestaurantSystem {
         const productImage = product.image || product.image_url || 'https://via.placeholder.com/300x200?text=No+Image';
         
         return `
-            <div class="product-card ${popularClass} ${vegetarianClass}" onclick="restaurantSystem.showProductDetails(${product.id})">
-                <img src="${productImage}" alt="${product.name}" class="product-image">
+            <div class="product-card ${popularClass} ${vegetarianClass}">
+                <img src="${productImage}" alt="${product.name}" class="product-image" onclick="restaurantSystem.showProductDetails(${product.id})" style="cursor: pointer;">
                 <div class="product-info">
-                    <h3 class="product-name">${product.name}</h3>
+                    <h3 class="product-name" onclick="restaurantSystem.showProductDetails(${product.id})" style="cursor: pointer;">${product.name}</h3>
                     <p class="product-description">${truncateText(product.description, 50)}</p>
                     <div class="product-rating">
                         ${this.renderStars(product.rating)}
                         <span>${product.rating}</span>
                     </div>
                     <div class="product-price">${formatPrice(product.price)}</div>
+                    <button class="add-to-cart-btn" onclick="if(shoppingCart) shoppingCart.addItem({id: '${product.id}', name: '${product.name.replace(/'/g, "\\'")}', price: ${product.price}, image: '${productImage}'}, 1); event.stopPropagation();">
+                        <i class="fas fa-shopping-cart"></i> Add to Cart
+                    </button>
                 </div>
             </div>
         `;
@@ -1341,3 +1344,356 @@ window.addEventListener('load', function() {
 // Immediate failsafe - try to initialize right now
 console.log('Script loaded, attempting immediate initialization...');
 tryInitialization();
+
+// ============================================================================
+// SHOPPING CART FUNCTIONALITY
+// ============================================================================
+
+// Cart Management System
+class ShoppingCart {
+    constructor() {
+        // Start with empty cart - automatically clear on page load/refresh
+        this.items = [];
+        localStorage.removeItem('restaurantCart');
+        this.initEventListeners();
+        this.updateCartCount();
+    }
+
+    initEventListeners() {
+        // Cart button click
+        const cartBtn = document.getElementById('cartBtn');
+        if (cartBtn) {
+            cartBtn.addEventListener('click', () => this.showCartModal());
+        }
+
+        // Checkout form submission
+        const checkoutForm = document.getElementById('checkoutForm');
+        if (checkoutForm) {
+            checkoutForm.addEventListener('submit', (e) => this.handleCheckout(e));
+        }
+
+        // Close modals when clicking outside
+        const cartModal = document.getElementById('cartModal');
+        const checkoutModal = document.getElementById('checkoutModal');
+
+        if (cartModal) {
+            cartModal.addEventListener('click', (e) => {
+                if (e.target === cartModal) {
+                    this.closeCartModal();
+                }
+            });
+        }
+
+        if (checkoutModal) {
+            checkoutModal.addEventListener('click', (e) => {
+                if (e.target === checkoutModal) {
+                    this.closeCheckoutModal();
+                }
+            });
+        }
+    }
+
+    // Add item to cart
+    addItem(product, quantity = 1) {
+        const existingItem = this.items.find(item => item.id === product.id);
+
+        if (existingItem) {
+            existingItem.quantity += quantity;
+        } else {
+            this.items.push({
+                id: product.id,
+                name: product.name,
+                price: product.price,
+                image: product.image || product.image_url,
+                quantity: quantity
+            });
+        }
+
+        this.saveToLocalStorage();
+        this.updateCartCount();
+        showToast(`${product.name} added to cart!`, 'success');
+    }
+
+    // Remove item from cart
+    removeItem(productId) {
+        this.items = this.items.filter(item => item.id !== productId);
+        this.saveToLocalStorage();
+        this.updateCartCount();
+        this.showCartModal(); // Refresh the cart display
+    }
+
+    // Update item quantity
+    updateQuantity(productId, quantity) {
+        const item = this.items.find(item => item.id === productId);
+        if (item) {
+            // If quantity reaches 0, show confirmation modal instead of removing directly
+            if (quantity <= 0) {
+                window.pendingRemovalProductId = productId;
+                window.pendingRemovalProductName = item.name;
+                this.showConfirmationModal(item.name);
+                return;
+            }
+            
+            item.quantity = quantity;
+            this.saveToLocalStorage();
+            this.updateCartCount();
+            this.showCartModal(); // Refresh the cart display
+        }
+    }
+
+    // Get cart total
+    getTotal() {
+        return this.items.reduce((total, item) => total + (item.price * item.quantity), 0);
+    }
+
+    // Get cart item count
+    getItemCount() {
+        return this.items.reduce((count, item) => count + item.quantity, 0);
+    }
+
+    // Update cart count badge
+    updateCartCount() {
+        const cartCount = document.getElementById('cartCount');
+        if (cartCount) {
+            cartCount.textContent = this.getItemCount();
+        }
+    }
+
+    // Show cart modal
+    showCartModal() {
+        const cartModal = document.getElementById('cartModal');
+        const cartModalBody = document.getElementById('cartModalBody');
+
+        if (!cartModal) return;
+
+        // Check if cart is empty
+        if (this.items.length === 0) {
+            cartModalBody.innerHTML = `
+                <div class="cart-empty">
+                    <i class="fas fa-shopping-cart"></i>
+                    <p>Your cart is empty</p>
+                    <p style="font-size: 0.9rem; color: #888;">Start adding items to your order!</p>
+                </div>
+            `;
+        } else {
+            // Display cart items
+            const itemsHTML = this.items.map(item => `
+                <div class="cart-item">
+                    <div class="cart-item-info">
+                        <div class="cart-item-name">${item.name}</div>
+                        <div class="cart-item-details">$${item.price.toFixed(2)} each</div>
+                    </div>
+                    <div class="cart-item-quantity">
+                        <button class="quantity-btn" onclick="shoppingCart.updateQuantity('${item.id}', ${item.quantity - 1})">−</button>
+                        <span>${item.quantity}</span>
+                        <button class="quantity-btn" onclick="shoppingCart.updateQuantity('${item.id}', ${item.quantity + 1})">+</button>
+                    </div>
+                    <div class="cart-item-price">$${(item.price * item.quantity).toFixed(2)}</div>
+                    <button class="cart-item-remove" onclick="shoppingCart.removeItem('${item.id}')">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                </div>
+            `).join('');
+
+            const total = this.getTotal();
+
+            cartModalBody.innerHTML = `
+                <div class="cart-items-list">
+                    ${itemsHTML}
+                </div>
+                <div class="cart-summary">
+                    <div class="cart-summary-item">
+                        <span>Subtotal:</span>
+                        <span>$${total.toFixed(2)}</span>
+                    </div>
+                    <div class="cart-summary-item">
+                        <span>Delivery Fee:</span>
+                        <span>$5.00</span>
+                    </div>
+                    <div class="cart-summary-item total">
+                        <span>Total:</span>
+                        <span>$${(total + 5).toFixed(2)}</span>
+                    </div>
+                </div>
+                <div class="cart-actions">
+                    <button class="continue-shopping-btn" onclick="shoppingCart.closeCartModal()">Continue Shopping</button>
+                    <button class="checkout-btn" onclick="shoppingCart.proceedToCheckout()">Checkout</button>
+                </div>
+            `;
+        }
+
+        cartModal.classList.add('show');
+    }
+
+    // Close cart modal
+    closeCartModal() {
+        const cartModal = document.getElementById('cartModal');
+        if (cartModal) {
+            cartModal.classList.remove('show');
+        }
+    }
+
+    // Proceed to checkout
+    proceedToCheckout() {
+        this.closeCartModal();
+        this.showCheckoutModal();
+    }
+
+    // Show checkout modal
+    showCheckoutModal() {
+        const checkoutModal = document.getElementById('checkoutModal');
+        const checkoutSummary = document.getElementById('checkoutSummary');
+        const orderTotal = document.getElementById('orderTotal');
+
+        if (!checkoutModal) return;
+
+        // Display order summary
+        const summaryHTML = this.items.map(item => `
+            <div class="checkout-summary-item">
+                <span>${item.name} x${item.quantity}</span>
+                <span>$${(item.price * item.quantity).toFixed(2)}</span>
+            </div>
+        `).join('');
+
+        const total = this.getTotal() + 5; // Including delivery fee
+
+        checkoutSummary.innerHTML = `
+            ${summaryHTML}
+            <div class="checkout-summary-item">
+                <span>Delivery Fee</span>
+                <span>$5.00</span>
+            </div>
+        `;
+
+        orderTotal.textContent = `$${total.toFixed(2)}`;
+
+        checkoutModal.classList.add('show');
+    }
+
+    // Close checkout modal
+    closeCheckoutModal() {
+        const checkoutModal = document.getElementById('checkoutModal');
+        if (checkoutModal) {
+            checkoutModal.classList.remove('show');
+        }
+    }
+
+    // Show confirmation modal for item removal
+    showConfirmationModal(itemName) {
+        const modal = document.getElementById('confirmationModal');
+        const message = document.getElementById('confirmationMessage');
+        
+        message.textContent = `Are you sure you want to remove "${itemName}" from the cart?`;
+        
+        if (modal) {
+            modal.classList.add('show');
+        }
+    }
+
+    // Close confirmation modal
+    closeConfirmationModal() {
+        const modal = document.getElementById('confirmationModal');
+        if (modal) {
+            modal.classList.remove('show');
+        }
+        window.pendingRemovalProductId = null;
+    }
+
+    // Confirm item removal
+    confirmRemoveItem() {
+        if (window.pendingRemovalProductId) {
+            this.removeItem(window.pendingRemovalProductId);
+            this.closeConfirmationModal();
+        }
+    }
+
+    // Handle checkout form submission
+    handleCheckout(e) {
+        e.preventDefault();
+
+        const formData = {
+            name: document.getElementById('customerName').value,
+            email: document.getElementById('customerEmail').value,
+            phone: document.getElementById('customerPhone').value,
+            address: document.getElementById('customerAddress').value,
+            notes: document.getElementById('customerNotes').value,
+            items: this.items,
+            total: this.getTotal() + 5,
+            orderDate: new Date().toLocaleString()
+        };
+
+        console.log('Order placed:', formData);
+
+        // Show success message
+        showToast('Order placed successfully! We will contact you soon.', 'success');
+
+        // Clear the form
+        document.getElementById('checkoutForm').reset();
+
+        // Close modal and clear cart
+        this.closeCheckoutModal();
+        this.clearCart();
+
+        // Optional: You can send this data to a server here
+        // Example: fetch('/api/orders', { method: 'POST', body: JSON.stringify(formData) })
+    }
+
+    // Clear cart
+    clearCart() {
+        this.items = [];
+        this.saveToLocalStorage();
+        this.updateCartCount();
+    }
+
+    // Save cart to localStorage
+    saveToLocalStorage() {
+        localStorage.setItem('restaurantCart', JSON.stringify(this.items));
+    }
+
+    // Load cart from localStorage
+    loadFromLocalStorage() {
+        const saved = localStorage.getItem('restaurantCart');
+        return saved ? JSON.parse(saved) : [];
+    }
+}
+
+// Initialize shopping cart
+let shoppingCart;
+
+// Create shopping cart when DOM is ready
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', () => {
+        if (!shoppingCart) {
+            shoppingCart = new ShoppingCart();
+        }
+    });
+} else {
+    if (!shoppingCart) {
+        shoppingCart = new ShoppingCart();
+    }
+}
+
+// Global functions for modals
+function closeCartModal() {
+    if (shoppingCart) {
+        shoppingCart.closeCartModal();
+    }
+}
+
+function closeCheckoutModal() {
+    if (shoppingCart) {
+        shoppingCart.closeCheckoutModal();
+    }
+}
+
+function closeConfirmationModal() {
+    if (shoppingCart) {
+        shoppingCart.closeConfirmationModal();
+    }
+}
+
+function confirmRemoveItem() {
+    if (shoppingCart) {
+        shoppingCart.confirmRemoveItem();
+    }
+}
