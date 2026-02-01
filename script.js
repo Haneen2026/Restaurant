@@ -678,8 +678,194 @@ class RestaurantSystem {
 
     // Product Details
     showProductDetails(productId) {
-        // Navigate to product details page with product ID as query parameter
-        window.location.href = `product-details.html?id=${productId}`;
+        // Find the product
+        let product = restaurantData.products.find(p => p.id === productId);
+        
+        // If not found in restaurantData, check largeRestaurantMenu
+        if (!product && typeof largeRestaurantMenu !== 'undefined') {
+            product = largeRestaurantMenu.products.find(p => p.id === productId);
+        }
+        
+        if (!product) {
+            console.error('Product not found');
+            return;
+        }
+        
+        // Hide all pages
+        document.querySelectorAll('.page').forEach(p => {
+            p.classList.remove('active');
+        });
+        
+        // Show product details page
+        document.getElementById('productDetailsPage').classList.add('active');
+        
+        // Update current product
+        this.currentProduct = product;
+        
+        // Scroll to top
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+        
+        // Load product details into the page
+        this.displayProductDetails(product);
+    }
+
+    // Display product details on the page
+    displayProductDetails(product) {
+        const productDetailsContainer = document.getElementById('productDetails');
+        
+        const productImage = product.image || product.image_url || 'https://via.placeholder.com/400x300?text=No+Image';
+        const ratingStars = this.renderStars(product.rating || 4.5);
+        
+        // Generate badges
+        let badges = '';
+        if (product.isVegetarian) {
+            badges += '<span class="badge badge-vegetarian">🥬 Vegetarian</span>';
+        }
+        if (product.isPopular) {
+            badges += '<span class="badge badge-popular">⭐ Popular</span>';
+        }
+        
+        productDetailsContainer.innerHTML = `
+            <div class="product-details-container">
+                <div class="product-details-image">
+                    <img src="${productImage}" alt="${product.name}" class="product-detail-image">
+                    ${badges}
+                </div>
+                <div class="product-details-info">
+                    <h1 class="product-detail-title">${product.name}</h1>
+                    <div class="product-detail-rating">
+                        ${ratingStars}
+                        <span class="rating-text">${product.rating || 4.5} (${Math.floor(Math.random() * 100) + 50} reviews)</span>
+                    </div>
+                    <p class="product-detail-description">${product.description}</p>
+                    <div class="product-detail-price">
+                        <span class="price-label">Price:</span>
+                        <span class="price-amount">${formatPrice(product.price)}</span>
+                    </div>
+                    
+                    <div class="product-detail-section">
+                        <h3>Ingredients</h3>
+                        <p class="ingredients-list">${this.getProductIngredients(product)}</p>
+                    </div>
+                    
+                    <div class="product-actions">
+                        <div class="quantity-selector">
+                            <button class="qty-btn" onclick="restaurantSystem.decreaseQuantity()">
+                                <i class="fas fa-minus"></i>
+                            </button>
+                            <input type="number" id="productQuantity" value="1" min="1" readonly class="qty-input">
+                            <button class="qty-btn" onclick="restaurantSystem.increaseQuantity()">
+                                <i class="fas fa-plus"></i>
+                            </button>
+                        </div>
+                        <button class="btn-add-to-cart" onclick="restaurantSystem.addProductToCart()">
+                            <i class="fas fa-shopping-cart"></i> Add to Cart
+                        </button>
+                    </div>
+                </div>
+            </div>
+        `;
+    }
+
+    // Quantity controls
+    increaseQuantity() {
+        const input = document.getElementById('productQuantity');
+        input.value = parseInt(input.value) + 1;
+    }
+
+    decreaseQuantity() {
+        const input = document.getElementById('productQuantity');
+        if (parseInt(input.value) > 1) {
+            input.value = parseInt(input.value) - 1;
+        }
+    }
+
+    // Add product to cart from details page
+    addProductToCart() {
+        if (!shoppingCart || !this.currentProduct) {
+            this.showToast('Error: Cart system not ready', 'error');
+            return;
+        }
+        
+        const quantity = parseInt(document.getElementById('productQuantity').value);
+        const product = this.currentProduct;
+        const productImage = product.image || product.image_url || 'https://via.placeholder.com/300x200?text=No+Image';
+        
+        shoppingCart.addItem({
+            id: product.id,
+            name: product.name,
+            price: product.price,
+            image: productImage
+        }, quantity);
+        
+        // Reset quantity
+        document.getElementById('productQuantity').value = 1;
+        
+        this.showToast(`${product.name} added to cart!`, 'success');
+    }
+
+    // Get product ingredients
+    getProductIngredients(product) {
+        const baseIngredients = {
+            'meat': ['Premium beef', 'Aromatic spices', 'Fresh herbs', 'Seasonal vegetables', 'Signature sauce'],
+            'chicken': ['Fresh chicken breast', 'Marinade blend', 'Authentic spices', 'Herbs', 'Fresh vegetables'],
+            'fish': ['Fresh caught fish', 'Lemon juice', 'Mediterranean herbs', 'Extra virgin olive oil', 'Sea salt'],
+            'vegetarian': ['Fresh vegetables', 'Organic herbs', 'Premium spices', 'Extra virgin olive oil', 'Sea salt'],
+            'pasta': ['Premium pasta', 'San Marzano tomatoes', 'Parmesan cheese', 'Fresh basil', 'Extra virgin olive oil'],
+            'dessert': ['Sugar', 'Premium flour', 'Butter', 'Farm fresh eggs', 'Vanilla extract'],
+            'beverage': ['Natural ingredients', 'Filtered water', 'Natural sweeteners', 'Fresh flavors']
+        };
+        
+        if (product.ingredients) {
+            return Array.isArray(product.ingredients) ? product.ingredients.join(', ') : product.ingredients;
+        }
+        
+        // Generate based on product name
+        const productName = product.name.toLowerCase();
+        let ingredients = baseIngredients.vegetarian;
+        
+        if (productName.includes('beef') || productName.includes('meat')) {
+            ingredients = baseIngredients.meat;
+        } else if (productName.includes('chicken')) {
+            ingredients = baseIngredients.chicken;
+        } else if (productName.includes('fish') || productName.includes('salmon') || productName.includes('tuna')) {
+            ingredients = baseIngredients.fish;
+        } else if (productName.includes('pasta')) {
+            ingredients = baseIngredients.pasta;
+        } else if (productName.includes('dessert') || productName.includes('cake') || productName.includes('ice cream')) {
+            ingredients = baseIngredients.dessert;
+        } else if (productName.includes('drink') || productName.includes('juice') || productName.includes('coffee')) {
+            ingredients = baseIngredients.beverage;
+        }
+        
+        return ingredients.join(', ');
+    }
+
+    // Load related products for details page
+    loadRelatedProductsForPage(productId, categoryId) {
+        const relatedContainer = document.getElementById('relatedProducts');
+        let allProducts = [];
+        
+        // Gather all products
+        if (restaurantData.products) {
+            allProducts = [...restaurantData.products];
+        }
+        if (typeof largeRestaurantMenu !== 'undefined' && largeRestaurantMenu.products) {
+            allProducts = [...allProducts, ...largeRestaurantMenu.products];
+        }
+        
+        // Filter related products
+        const relatedProducts = allProducts
+            .filter(p => p.id !== productId && (p.categoryId === categoryId || categoryId === 1))
+            .slice(0, 4);
+        
+        if (relatedProducts.length > 0) {
+            relatedContainer.innerHTML = relatedProducts
+                .map(product => this.createProductCard(product))
+                .join('');
+        } else {
+            relatedContainer.innerHTML = '<p>No related products found</p>';
+        }
     }
 
     loadRelatedProducts(productId, categoryId) {
