@@ -1456,8 +1456,10 @@ function showToast(message, type = 'success') {
 }
 
 function showError() {
-    document.getElementById('loadingState').style.display = 'none';
-    document.getElementById('errorState').style.display = 'block';
+    const loadingState = document.getElementById('loadingState');
+    const errorState = document.getElementById('errorState');
+    if (loadingState) loadingState.style.display = 'none';
+    if (errorState) errorState.style.display = 'block';
 }
 
 // Dark mode functions
@@ -1853,14 +1855,21 @@ class ShoppingCart {
 
         console.log('📤 Sending checkout to Google Sheet');
         console.log('📦 Payload:', payloadObj);
+        console.log('📋 Sheet columns expected: name, email, phone, address, notes, products, total');
+        console.log('📋 Target sheet name: Sheet1 (as per your Apps Script code)');
 
         // Send as form-encoded to avoid CORS preflight (puts JSON in 'payload' field)
-        const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbydzrceyDPnI8Us8jRUkx43HF6-esV4JUNgMWnGE-0p-2mZAW1ipMjmWbvqwKckxxVMqw/exec';
+        const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbysnHXk5RcMLQKskk5sKKHjiplcBU0y9bFwFvnOLR7gmU6PgrG6chG2ibDKWPmeYVpamA/exec';
         const params = new URLSearchParams();
         params.append('payload', JSON.stringify(payloadObj));
         
         console.log('📋 URL:', WEB_APP_URL);
         console.log('📋 Body (form-encoded):', params.toString().substring(0, 200) + '...');
+        console.log('📋 Full payload being sent:', JSON.stringify(payloadObj, null, 2));
+        
+        // Test: Log the exact URL and data for manual testing
+        console.log('🔧 MANUAL TEST URL:', WEB_APP_URL);
+        console.log('🔧 MANUAL TEST DATA:', 'payload=' + encodeURIComponent(JSON.stringify(payloadObj)));
 
         // Try fetch first, then fallback to XMLHttpRequest
         this.submitWithFetch(WEB_APP_URL, params, submitBtn)
@@ -1918,28 +1927,34 @@ class ShoppingCart {
 
     // Handle response from either fetch or XHR
     handleResponse(text, submitBtn) {
-        console.log('🔍 Raw response text:', text);
-        console.log('🔍 Response text length:', text.length);
-        console.log('🔍 Response text type:', typeof text);
+        console.log(' Raw response text:', text);
+        console.log(' Response text length:', text.length);
+        console.log(' Response text type:', typeof text);
         
         let json;
         try { 
-            json = JSON.parse(text); 
-            console.log('✅ Successfully parsed JSON:', json);
+            // Only try to parse if we have actual content
+            if (text && text.trim().length > 0) {
+                json = JSON.parse(text); 
+                console.log(' Successfully parsed JSON:', json);
+            } else {
+                console.log(' Empty response - assuming success with no-cors');
+                json = { result: 'success', message: 'Order submitted successfully (no-cors response)' };
+            }
         } catch (e) { 
-            console.warn('⚠️ Failed to parse JSON:', e.message);
-            console.warn('⚠️ Text that failed to parse:', text);
+            console.warn(' Failed to parse JSON:', e.message);
+            console.warn(' Text that failed to parse:', text);
             
             // With no-cors, we often get empty response, so assume success if we got here
-            if (text === '' || text.length === 0) {
-                console.log('📝 Empty response with no-cors - assuming success');
+            if (text === '' || text.length === 0 || text.trim() === '') {
+                console.log(' Empty/whitespace response with no-cors - assuming success');
                 json = { result: 'success', message: 'Order submitted successfully (no-cors response)' };
             } else {
                 json = { result: 'error', raw: text, message: 'Could not parse server response' }; 
             }
         }
         
-        console.log('🎯 Final processed response:', json);
+        console.log(' Final processed response:', json);
         
         if (json && (json.result === 'success' || json.status === 'ok')) {
             showToast('Order submitted successfully! We will contact you soon.', 'success');
