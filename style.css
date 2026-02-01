@@ -508,6 +508,10 @@ body.dark-mode .hero-content p {
 
     letter-spacing: 0.5px;
 
+    background: transparent;
+
+    border: 1px solid rgba(255, 107, 53, 0.1);
+
 }
 
 
@@ -554,6 +558,8 @@ body.dark-mode .hero-content p {
 
     box-shadow: 0 8px 25px rgba(255, 107, 53, 0.2);
 
+    border-color: rgba(255, 107, 53, 0.3);
+
 }
 
 
@@ -568,13 +574,17 @@ body.dark-mode .hero-content p {
 
 .nav-link.active {
 
-    background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+    background: transparent;
 
-    color: var(--white);
+    color: var(--primary-color);
 
     transform: translateY(-1px);
 
-    box-shadow: 0 8px 30px rgba(255, 107, 53, 0.3);
+    box-shadow: none;
+
+    border-color: var(--primary-color);
+
+    font-weight: 700;
 
 }
 
@@ -584,8 +594,11 @@ body.dark-mode .hero-content p {
 
     left: 0;
 
-}
+    background: linear-gradient(90deg, var(--primary-color), var(--secondary-color));
 
+    opacity: 0.1;
+
+}
 
 
 /* Professional Header Actions */
@@ -885,6 +898,10 @@ body.dark-mode .hero-content p {
     text-transform: uppercase;
 
     letter-spacing: 1px;
+
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+
+    border: 2px solid rgba(255, 255, 255, 0.2);
 
 }
 
