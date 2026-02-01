@@ -1622,32 +1622,157 @@ class ShoppingCart {
     // Handle checkout form submission
     handleCheckout(e) {
         e.preventDefault();
+        // Collect form fields (matching Apps Script expectations)
+        const name = (document.getElementById('customerName') || {}).value || '';
+        const email = (document.getElementById('customerEmail') || {}).value || '';
+        const phone = (document.getElementById('customerPhone') || {}).value || '';
+        const address = (document.getElementById('customerAddress') || {}).value || '';
+        const notes = (document.getElementById('customerNotes') || {}).value || '';
 
-        const formData = {
-            name: document.getElementById('customerName').value,
-            email: document.getElementById('customerEmail').value,
-            phone: document.getElementById('customerPhone').value,
-            address: document.getElementById('customerAddress').value,
-            notes: document.getElementById('customerNotes').value,
-            items: this.items,
-            total: this.getTotal() + 5,
-            orderDate: new Date().toLocaleString()
+        // Build products array from cart items
+        const products = (this.items || []).map(it => ({
+            name: it.name || '',
+            quantity: Number(it.quantity || 0),
+            price: Number(it.price || 0)
+        }));
+
+        const subtotal = this.getTotal();
+        const deliveryFee = 5; // match UI
+        const total = subtotal + deliveryFee;
+
+        // Payload matching Apps Script sheet columns: name, email, phone, address, notes, products, total
+        const payloadObj = {
+            name: name,
+            email: email,
+            phone: phone,
+            address: address,
+            notes: notes,
+            products: JSON.stringify(products), // Convert array to JSON string for Google Sheets
+            total: total
         };
 
-        console.log('Order placed:', formData);
+        // UI feedback
+        const submitBtn = document.querySelector('#checkoutForm button[type="submit"]') || document.getElementById('checkoutSubmitBtn');
+        if (submitBtn) { submitBtn.disabled = true; submitBtn.dataset.origText = submitBtn.innerText; submitBtn.innerText = 'Submitting...'; }
+        showToast('Submitting order...', 'info');
 
-        // Show success message
-        showToast('Order placed successfully! We will contact you soon.', 'success');
+        console.log('📤 Sending checkout to Google Sheet');
+        console.log('📦 Payload:', payloadObj);
 
-        // Clear the form
-        document.getElementById('checkoutForm').reset();
+        // Send as form-encoded to avoid CORS preflight (puts JSON in 'payload' field)
+        const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbydzrceyDPnI8Us8jRUkx43HF6-esV4JUNgMWnGE-0p-2mZAW1ipMjmWbvqwKckxxVMqw/exec';
+        const params = new URLSearchParams();
+        params.append('payload', JSON.stringify(payloadObj));
+        
+        console.log('📋 URL:', WEB_APP_URL);
+        console.log('📋 Body (form-encoded):', params.toString().substring(0, 200) + '...');
 
-        // Close modal and clear cart
-        this.closeCheckoutModal();
-        this.clearCart();
+        // Try fetch first, then fallback to XMLHttpRequest
+        this.submitWithFetch(WEB_APP_URL, params, submitBtn)
+            .catch(() => {
+                console.log('🔄 Fetch failed, trying XMLHttpRequest fallback...');
+                this.submitWithXMLHttpRequest(WEB_APP_URL, params, submitBtn);
+            });
+    }
 
-        // Optional: You can send this data to a server here
-        // Example: fetch('/api/orders', { method: 'POST', body: JSON.stringify(formData) })
+    // Fetch method with no-cors
+    submitWithFetch(url, params, submitBtn) {
+        return fetch(url, {
+            method: 'POST',
+            mode: 'no-cors',
+            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+            body: params.toString()
+        })
+        .then(res => {
+            console.log('✅ FETCH SUCCEEDED - Status:', res.status, res.statusText);
+            return res.text();
+        })
+        .then(text => {
+            console.log('📝 Response text received:', text.substring(0, 300));
+            this.handleResponse(text, submitBtn);
+        })
+        .catch(err => {
+            console.error('❌ FETCH FAILED:', err.message);
+            throw err; // Re-throw to trigger fallback
+        });
+    }
+
+    // XMLHttpRequest fallback method
+    submitWithXMLHttpRequest(url, params, submitBtn) {
+        return new Promise((resolve, reject) => {
+            const xhr = new XMLHttpRequest();
+            xhr.open('POST', url, true);
+            xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+            
+            xhr.onload = () => {
+                console.log('✅ XHR COMPLETED - Status:', xhr.status, xhr.statusText);
+                console.log('📝 Response text received:', xhr.responseText.substring(0, 300));
+                this.handleResponse(xhr.responseText, submitBtn);
+                resolve();
+            };
+            
+            xhr.onerror = () => {
+                console.error('❌ XHR FAILED');
+                showToast('Network or server error while submitting order.', 'error');
+                reject(new Error('XMLHttpRequest failed'));
+            };
+            
+            xhr.send(params.toString());
+        });
+    }
+
+    // Handle response from either fetch or XHR
+    handleResponse(text, submitBtn) {
+        console.log('🔍 Raw response text:', text);
+        console.log('🔍 Response text length:', text.length);
+        console.log('🔍 Response text type:', typeof text);
+        
+        let json;
+        try { 
+            json = JSON.parse(text); 
+            console.log('✅ Successfully parsed JSON:', json);
+        } catch (e) { 
+            console.warn('⚠️ Failed to parse JSON:', e.message);
+            console.warn('⚠️ Text that failed to parse:', text);
+            
+            // With no-cors, we often get empty response, so assume success if we got here
+            if (text === '' || text.length === 0) {
+                console.log('📝 Empty response with no-cors - assuming success');
+                json = { result: 'success', message: 'Order submitted successfully (no-cors response)' };
+            } else {
+                json = { result: 'error', raw: text, message: 'Could not parse server response' }; 
+            }
+        }
+        
+        console.log('🎯 Final processed response:', json);
+        
+        if (json && (json.result === 'success' || json.status === 'ok')) {
+            showToast('Order submitted successfully! We will contact you soon.', 'success');
+            // Clear the form
+            const f = document.getElementById('checkoutForm'); if (f) f.reset();
+            // Close modal and clear cart
+            this.closeCheckoutModal();
+            this.clearCart();
+        } else {
+            const msg = (json && (json.message || json.error)) ? (json.message || json.error) : (json && json.raw ? json.raw : 'Submission failed');
+            console.warn('⚠️ Server returned error:', msg);
+            console.warn('⚠️ Full error object:', json);
+            
+            // More specific error messages
+            if (msg.includes('no payload')) {
+                showToast('Error: No order data received. Please check your internet connection.', 'error');
+            } else if (msg.includes('CORS')) {
+                showToast('Error: Browser security restriction. Please try again.', 'error');
+            } else {
+                showToast('Order submission failed: ' + msg, 'error');
+            }
+        }
+        
+        // Re-enable button
+        if (submitBtn) { 
+            submitBtn.disabled = false; 
+            submitBtn.innerText = submitBtn.dataset.origText || 'Checkout'; 
+        }
     }
 
     // Clear cart
