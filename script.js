@@ -1550,9 +1550,8 @@ tryInitialization();
 // Cart Management System
 class ShoppingCart {
     constructor() {
-        // Start with empty cart - automatically clear on page load/refresh
-        this.items = [];
-        localStorage.removeItem('restaurantCart');
+        // Load cart from localStorage so it persists across page loads
+        this.items = this.loadFromLocalStorage() || [];
         this.initEventListeners();
         this.updateCartCount();
     }
@@ -1609,6 +1608,12 @@ class ShoppingCart {
 
         this.saveToLocalStorage();
         this.updateCartCount();
+        // Briefly animate cart button to give feedback
+        const cartBtn = document.getElementById('cartBtn');
+        if (cartBtn) {
+            cartBtn.classList.add('cart-pop');
+            setTimeout(() => cartBtn.classList.remove('cart-pop'), 800);
+        }
         showToast(`${product.name} added to cart!`, 'success');
     }
 
@@ -1674,9 +1679,12 @@ class ShoppingCart {
                 </div>
             `;
         } else {
-            // Display cart items
+            // Display cart items with thumbnail and improved layout
             const itemsHTML = this.items.map(item => `
                 <div class="cart-item">
+                    <div class="cart-item-thumb">
+                        <img src="${item.image || 'https://via.placeholder.com/80'}" alt="${item.name}" />
+                    </div>
                     <div class="cart-item-info">
                         <div class="cart-item-name">${item.name}</div>
                         <div class="cart-item-details">$${item.price.toFixed(2)} each</div>
@@ -1701,19 +1709,20 @@ class ShoppingCart {
                 </div>
                 <div class="cart-summary">
                     <div class="cart-summary-item">
-                        <span>Subtotal:</span>
+                        <span><i class="fas fa-receipt"></i> Subtotal:</span>
                         <span>$${total.toFixed(2)}</span>
                     </div>
                     <div class="cart-summary-item">
-                        <span>Delivery Fee:</span>
+                        <span><i class="fas fa-truck"></i> Delivery Fee:</span>
                         <span>$5.00</span>
                     </div>
                     <div class="cart-summary-item total">
-                        <span>Total:</span>
+                        <span><i class="fas fa-dollar-sign"></i> Total:</span>
                         <span>$${(total + 5).toFixed(2)}</span>
                     </div>
                 </div>
                 <div class="cart-actions">
+                    <button class="clear-cart-btn" onclick="shoppingCart.clearCartConfirm()">Clear Cart</button>
                     <button class="continue-shopping-btn" onclick="shoppingCart.closeCartModal()">Continue Shopping</button>
                     <button class="checkout-btn" onclick="shoppingCart.proceedToCheckout()">Checkout</button>
                 </div>
@@ -1966,6 +1975,17 @@ class ShoppingCart {
         this.items = [];
         this.saveToLocalStorage();
         this.updateCartCount();
+    }
+
+    // Confirm before clearing the entire cart
+    clearCartConfirm() {
+        if (this.items.length === 0) return;
+        const ok = window.confirm('Are you sure you want to clear the entire cart?');
+        if (ok) {
+            this.clearCart();
+            this.showCartModal();
+            showToast('Cart cleared', 'info');
+        }
     }
 
     // Save cart to localStorage
