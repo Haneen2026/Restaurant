@@ -151,7 +151,7 @@ class RestaurantSystem {
             return;
         }
         
-        const featuredProducts = restaurantData.products.slice(0, 4);
+        const featuredProducts = restaurantData.products.slice(0, 3);
         console.log('Found featured products:', featuredProducts.length);
         
         container.innerHTML = featuredProducts.map(product => 
