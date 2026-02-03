@@ -582,7 +582,7 @@ body.dark-mode .hero-content p {
 
     box-shadow: none;
 
-    border-color: var(--primary-color);
+    border: 2px solid var(--primary-color);
 
     font-weight: 700;
 
@@ -592,11 +592,9 @@ body.dark-mode .hero-content p {
 
 .nav-link.active::before {
 
-    left: 0;
+    display: none;
 
-    background: linear-gradient(90deg, var(--primary-color), var(--secondary-color));
-
-        }
+}
 
 
         /* Professional Header Actions */
