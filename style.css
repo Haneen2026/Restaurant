@@ -5244,30 +5244,194 @@ body.dark-mode .price-range-values span:nth-child(2) {
 
 /* About Page */
 
-.about-content {
-
-    max-width: 800px;
-
-    margin: 0 auto;
-
-    text-align: center;
-
+#aboutPage {
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 50%, #f8f9fa 100%);
+    min-height: 80vh;
+    position: relative;
+    overflow: hidden;
 }
 
+#aboutPage::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: linear-gradient(90deg, var(--primary-color), var(--secondary-color), var(--primary-color));
+    background-size: 200% 100%;
+    animation: headerGradient 3s ease-in-out infinite;
+}
 
+#aboutPage .container {
+    position: relative;
+    z-index: 1;
+}
+
+#aboutPage h1 {
+    font-size: 3.5rem;
+    font-weight: 900;
+    text-align: center;
+    margin-bottom: 3rem;
+    background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    position: relative;
+    animation: fadeInDown 0.8s ease-out;
+}
+
+#aboutPage h1::after {
+    content: '';
+    position: absolute;
+    bottom: -15px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 100px;
+    height: 4px;
+    background: linear-gradient(90deg, var(--primary-color), var(--secondary-color));
+    border-radius: 2px;
+    box-shadow: 0 0 20px rgba(255, 107, 53, 0.3);
+}
+
+.about-content {
+    max-width: 900px;
+    margin: 0 auto;
+    text-align: center;
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(20px);
+    border-radius: 25px;
+    padding: 3rem;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.08);
+    border: 1px solid rgba(255, 107, 53, 0.1);
+    position: relative;
+    overflow: hidden;
+    animation: fadeInUp 0.8s ease-out 0.2s both;
+}
+
+.about-content::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: linear-gradient(90deg, var(--primary-color), var(--secondary-color), var(--primary-color));
+    background-size: 200% 100%;
+    animation: headerGradient 3s ease-in-out infinite;
+}
+
+.about-content::after {
+    content: '';
+    position: absolute;
+    top: -50%;
+    right: -50%;
+    width: 200px;
+    height: 200px;
+    background: radial-gradient(circle, rgba(255, 107, 53, 0.05) 0%, transparent 70%);
+    border-radius: 50%;
+    animation: float 6s ease-in-out infinite;
+}
 
 .about-content p {
-
-    font-size: 1.1rem;
-
-    line-height: 1.8;
-
-    color: var(--text-light);
-
+    font-size: 1.2rem;
+    line-height: 1.9;
+    color: var(--text-color);
     margin-bottom: 2rem;
-
+    position: relative;
+    z-index: 1;
+    font-weight: 500;
+    animation: fadeIn 1s ease-out 0.4s both;
 }
 
+.about-content p:first-of-type {
+    font-size: 1.3rem;
+    color: var(--primary-color);
+    font-weight: 600;
+    margin-bottom: 2.5rem;
+}
+
+.about-content p:last-of-type {
+    margin-bottom: 0;
+}
+
+.about-content p:hover {
+    transform: translateX(5px);
+    transition: transform 0.3s ease;
+}
+
+/* Dark mode for About Page */
+body.dark-mode #aboutPage {
+    background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #0f172a 100%);
+}
+
+body.dark-mode .about-content {
+    background: rgba(30, 41, 59, 0.95);
+    border-color: rgba(255, 107, 53, 0.2);
+    color: var(--text-color);
+}
+
+body.dark-mode .about-content p {
+    color: #e2e8f0;
+}
+
+body.dark-mode .about-content p:first-of-type {
+    color: var(--primary-color);
+}
+
+/* About Page Animation Keyframes */
+@keyframes float {
+    0%, 100% {
+        transform: translateY(0) rotate(0deg);
+    }
+    50% {
+        transform: translateY(-20px) rotate(180deg);
+    }
+}
+
+/* Responsive About Page */
+@media (max-width: 768px) {
+    #aboutPage h1 {
+        font-size: 2.5rem;
+        margin-bottom: 2rem;
+    }
+    
+    .about-content {
+        padding: 2rem;
+        margin: 0 1rem;
+    }
+    
+    .about-content p {
+        font-size: 1.1rem;
+    }
+    
+    .about-content p:first-of-type {
+        font-size: 1.2rem;
+    }
+}
+
+@media (max-width: 480px) {
+    #aboutPage h1 {
+        font-size: 2rem;
+        letter-spacing: 1px;
+    }
+    
+    .about-content {
+        padding: 1.5rem;
+        margin: 0 0.5rem;
+    }
+    
+    .about-content p {
+        font-size: 1rem;
+        line-height: 1.7;
+    }
+    
+    .about-content p:first-of-type {
+        font-size: 1.1rem;
+    }
+}
 
 
 /* Contact Page */
