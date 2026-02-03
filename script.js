@@ -1808,10 +1808,25 @@ class ShoppingCart {
         window.pendingRemovalProductId = null;
     }
 
-    // Confirm item removal
+    // Confirm item removal or clear cart
     confirmRemoveItem() {
         if (window.pendingRemovalProductId) {
-            this.removeItem(window.pendingRemovalProductId);
+            if (window.pendingRemovalProductId === 'CLEAR_CART') {
+                // Handle clear cart
+                this.clearCart();
+                this.showCartModal();
+                showToast('Cart cleared', 'info');
+            } else {
+                // Handle individual item removal
+                this.removeItem(window.pendingRemovalProductId);
+            }
+            
+            // Restore button text to default
+            const confirmBtn = document.querySelector('.btn-confirm');
+            if (confirmBtn) {
+                confirmBtn.textContent = 'Remove Item';
+            }
+            
             this.closeConfirmationModal();
         }
     }
@@ -1995,11 +2010,25 @@ class ShoppingCart {
     // Confirm before clearing the entire cart
     clearCartConfirm() {
         if (this.items.length === 0) return;
-        const ok = window.confirm('Are you sure you want to clear the entire cart?');
-        if (ok) {
-            this.clearCart();
-            this.showCartModal();
-            showToast('Cart cleared', 'info');
+        
+        // Set pending action for clear cart
+        window.pendingRemovalProductId = 'CLEAR_CART';
+        window.pendingRemovalProductName = 'all items';
+        
+        // Show the same styled confirmation modal as individual item removal
+        const modal = document.getElementById('confirmationModal');
+        const message = document.getElementById('confirmationMessage');
+        const confirmBtn = document.querySelector('.btn-confirm');
+        
+        message.textContent = 'Are you sure you want to remove all items from the cart?';
+        
+        // Update button text for clear cart context
+        if (confirmBtn) {
+            confirmBtn.textContent = 'Clear Cart';
+        }
+        
+        if (modal) {
+            modal.classList.add('show');
         }
     }
 
